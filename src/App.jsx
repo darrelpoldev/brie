@@ -305,6 +305,40 @@ const s = {
     lineHeight: 1.6,
     padding: '8px 0',
   },
+  offlineBanner: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '10px',
+    padding: '14px 24px',
+    borderRadius: '20px',
+    border: 'none',
+    background: 'rgba(255,255,255,0.75)',
+    backdropFilter: 'blur(8px)',
+    boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
+    cursor: 'pointer',
+    width: '100%',
+    maxWidth: '360px',
+    animation: 'fadeSlideIn 0.5s ease-out 0.3s both',
+    transition: 'transform 0.2s, box-shadow 0.2s',
+    WebkitTapHighlightColor: 'transparent',
+  },
+  offlineBannerText: {
+    fontSize: '15px',
+    fontWeight: 700,
+    color: '#5D4E6D',
+  },
+  offlineBannerDesc: {
+    fontSize: '12px',
+    fontWeight: 600,
+    color: '#A99BBE',
+    marginTop: '1px',
+  },
+  offlineBannerIcon: {
+    fontSize: '28px',
+    lineHeight: 1,
+    flexShrink: 0,
+  },
 
   // Nav bar
   nav: {
@@ -709,6 +743,8 @@ function PatternGame({ onBack }) {
 // ─── Main App ───────────────────────────────────────────────────────────────
 export default function App() {
   const [screen, setScreen] = useState('home')
+  const [installPrompt, setInstallPrompt] = useState(null)
+  const [isInstalled, setIsInstalled] = useState(false)
 
   // Inject global styles once
   useEffect(() => {
@@ -720,6 +756,44 @@ export default function App() {
       document.head.appendChild(tag)
     }
   }, [])
+
+  // Capture PWA install prompt & detect installed state
+  useEffect(() => {
+    // Check if already running as installed PWA
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+      setIsInstalled(true)
+      return
+    }
+
+    const handleBeforeInstall = (e) => {
+      e.preventDefault()
+      setInstallPrompt(e)
+    }
+
+    const handleAppInstalled = () => {
+      setIsInstalled(true)
+      setInstallPrompt(null)
+    }
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall)
+    window.addEventListener('appinstalled', handleAppInstalled)
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstall)
+      window.removeEventListener('appinstalled', handleAppInstalled)
+    }
+  }, [])
+
+  const handleInstallClick = async () => {
+    if (installPrompt) {
+      playTap()
+      installPrompt.prompt()
+      const result = await installPrompt.userChoice
+      if (result.outcome === 'accepted') {
+        setIsInstalled(true)
+      }
+      setInstallPrompt(null)
+    }
+  }
 
   if (screen === 'shapes') {
     return <ShapePlayground onBack={() => setScreen('home')} />
@@ -764,6 +838,29 @@ export default function App() {
             </div>
           </button>
         </div>
+
+        {installPrompt ? (
+          <button
+            style={s.offlineBanner}
+            onClick={handleInstallClick}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.03)'; e.currentTarget.style.boxShadow = '0 6px 28px rgba(0,0,0,0.1)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
+          >
+            <span style={s.offlineBannerIcon}>📲</span>
+            <div style={{ textAlign: 'left' }}>
+              <div style={s.offlineBannerText}>Install to Play Offline</div>
+              <div style={s.offlineBannerDesc}>No internet needed — play anytime, anywhere</div>
+            </div>
+          </button>
+        ) : (
+          <div style={{ ...s.offlineBanner, cursor: 'default' }}>
+            <span style={s.offlineBannerIcon}>{isInstalled ? '✅' : '📡'}</span>
+            <div style={{ textAlign: 'left' }}>
+              <div style={s.offlineBannerText}>{isInstalled ? 'Ready to Play Offline' : 'Works Without Internet'}</div>
+              <div style={s.offlineBannerDesc}>{isInstalled ? 'Installed — play anytime, anywhere' : 'Free to play, no wifi needed'}</div>
+            </div>
+          </div>
+        )}
 
         <footer style={s.footer}>
           No ads · No rules · No data collected · Just play 🌈
