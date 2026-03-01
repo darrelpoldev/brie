@@ -358,43 +358,41 @@ const s = {
     marginTop: '-8px',
   },
   toyGrid: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
+    display: 'grid',
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: '12px',
     width: '100%',
-    maxWidth: '360px',
+    maxWidth: '400px',
   },
   toyButton: (idx) => ({
     display: 'flex',
+    flexDirection: 'column',
     alignItems: 'center',
-    gap: '16px',
-    padding: '20px 24px',
+    justifyContent: 'center',
+    gap: '8px',
+    padding: '16px 8px',
     borderRadius: '24px',
     border: 'none',
     background: 'rgba(255,255,255,0.75)',
     backdropFilter: 'blur(8px)',
     boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
     cursor: 'pointer',
-    textAlign: 'left',
-    animation: `float 3s ease-in-out infinite, fadeSlideIn 0.5s ease-out ${idx * 0.15}s both`,
+    textAlign: 'center',
+    aspectRatio: '1',
+    animation: `float 3s ease-in-out infinite, fadeSlideIn 0.5s ease-out ${idx * 0.1}s both`,
     transition: 'transform 0.2s, box-shadow 0.2s',
     WebkitTapHighlightColor: 'transparent',
   }),
   toyIcon: {
-    fontSize: '40px',
+    fontSize: 'clamp(32px, 8vw, 44px)',
     lineHeight: 1,
     flexShrink: 0,
   },
   toyLabel: {
-    fontSize: '20px',
+    fontSize: 'clamp(13px, 3.5vw, 16px)',
     fontWeight: 800,
     color: '#5D4E6D',
-  },
-  toyDesc: {
-    fontSize: '13px',
-    fontWeight: 600,
-    color: '#A99BBE',
-    marginTop: '2px',
+    lineHeight: 1.2,
   },
   badge: {
     position: 'absolute',
@@ -430,7 +428,7 @@ const s = {
     boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
     cursor: 'pointer',
     width: '100%',
-    maxWidth: '360px',
+    maxWidth: '400px',
     animation: 'fadeSlideIn 0.5s ease-out 0.3s both',
     transition: 'transform 0.2s, box-shadow 0.2s',
     WebkitTapHighlightColor: 'transparent',
@@ -1511,83 +1509,25 @@ export default function App() {
         <p style={s.subtitle}>Play, explore &amp; discover</p>
 
         <div style={s.toyGrid}>
-          <button
-            style={s.toyButton(0)}
-            onClick={() => { playTap(); setScreen('shapes') }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.03)'; e.currentTarget.style.boxShadow = '0 6px 28px rgba(0,0,0,0.1)' }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
-          >
-            <span style={s.toyIcon}>🔷</span>
-            <div>
-              <div style={s.toyLabel}>Shape Play</div>
-              <div style={s.toyDesc}>Drop &amp; drag colorful shapes</div>
-            </div>
-          </button>
-
-          <button
-            style={s.toyButton(1)}
-            onClick={() => { playTap(); setScreen('patterns') }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.03)'; e.currentTarget.style.boxShadow = '0 6px 28px rgba(0,0,0,0.1)' }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
-          >
-            <span style={s.toyIcon}>🌟</span>
-            <div>
-              <div style={s.toyLabel}>Patterns</div>
-              <div style={s.toyDesc}>Find the missing shape</div>
-            </div>
-          </button>
-
-          <button
-            style={s.toyButton(2)}
-            onClick={() => { playTap(); setScreen('letters') }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.03)'; e.currentTarget.style.boxShadow = '0 6px 28px rgba(0,0,0,0.1)' }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
-          >
-            <span style={s.toyIcon}>🔤</span>
-            <div>
-              <div style={s.toyLabel}>Letter Land</div>
-              <div style={s.toyDesc}>Learn letters &amp; words</div>
-            </div>
-          </button>
-
-          <button
-            style={s.toyButton(3)}
-            onClick={() => { playTap(); setScreen('counting') }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.03)'; e.currentTarget.style.boxShadow = '0 6px 28px rgba(0,0,0,0.1)' }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
-          >
-            <span style={s.toyIcon}>🌻</span>
-            <div>
-              <div style={s.toyLabel}>Counting</div>
-              <div style={s.toyDesc}>Plant &amp; count to ten</div>
-            </div>
-          </button>
-
-          <button
-            style={s.toyButton(4)}
-            onClick={() => { playTap(); setScreen('story') }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.03)'; e.currentTarget.style.boxShadow = '0 6px 28px rgba(0,0,0,0.1)' }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
-          >
-            <span style={s.toyIcon}>📖</span>
-            <div>
-              <div style={s.toyLabel}>Story Time</div>
-              <div style={s.toyDesc}>Build your own story</div>
-            </div>
-          </button>
-
-          <button
-            style={s.toyButton(5)}
-            onClick={() => { playTap(); setScreen('colors') }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.03)'; e.currentTarget.style.boxShadow = '0 6px 28px rgba(0,0,0,0.1)' }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
-          >
-            <span style={s.toyIcon}>🎨</span>
-            <div>
-              <div style={s.toyLabel}>Color Mix</div>
-              <div style={s.toyDesc}>Mix colors together</div>
-            </div>
-          </button>
+          {[
+            { icon: '🔷', label: 'Shapes', screen: 'shapes' },
+            { icon: '🌟', label: 'Patterns', screen: 'patterns' },
+            { icon: '🔤', label: 'Letters', screen: 'letters' },
+            { icon: '🌻', label: 'Counting', screen: 'counting' },
+            { icon: '📖', label: 'Stories', screen: 'story' },
+            { icon: '🎨', label: 'Colors', screen: 'colors' },
+          ].map((game, idx) => (
+            <button
+              key={game.screen}
+              style={s.toyButton(idx)}
+              onClick={() => { playTap(); setScreen(game.screen) }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 6px 28px rgba(0,0,0,0.1)' }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
+            >
+              <span style={s.toyIcon}>{game.icon}</span>
+              <div style={s.toyLabel}>{game.label}</div>
+            </button>
+          ))}
         </div>
 
         {installPrompt ? (
