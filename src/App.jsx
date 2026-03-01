@@ -41,6 +41,36 @@ function playDrop() {
   playTone(350, 0.1, 'sine', 0.08)
 }
 
+function playLetterSound(idx) {
+  const freq = 262 + idx * 28
+  playTone(freq, 0.3, 'sine', 0.1)
+  setTimeout(() => playTone(freq * 1.5, 0.15, 'sine', 0.06), 150)
+}
+
+function playPlant() {
+  playTone(440, 0.1, 'sine', 0.08)
+  setTimeout(() => playTone(554, 0.1, 'sine', 0.08), 80)
+  setTimeout(() => playTone(659, 0.15, 'sine', 0.08), 160)
+}
+
+function playPageTurn() {
+  playTone(500, 0.08, 'sine', 0.06)
+  setTimeout(() => playTone(600, 0.08, 'sine', 0.06), 60)
+}
+
+function playMix() {
+  playTone(400, 0.15, 'triangle', 0.08)
+  setTimeout(() => playTone(500, 0.15, 'triangle', 0.08), 100)
+  setTimeout(() => playTone(650, 0.25, 'sine', 0.1), 200)
+}
+
+function playStoryReveal() {
+  playTone(392, 0.15, 'sine', 0.08)
+  setTimeout(() => playTone(494, 0.15, 'sine', 0.08), 150)
+  setTimeout(() => playTone(587, 0.15, 'sine', 0.08), 300)
+  setTimeout(() => playTone(784, 0.3, 'sine', 0.1), 450)
+}
+
 // ─── Color palette ──────────────────────────────────────────────────────────
 const COLORS = ['#FF8A80', '#FFAB91', '#CE93D8', '#81D4FA', '#A5D6A7', '#FFE082', '#F48FB1', '#80CBC4']
 
@@ -94,6 +124,88 @@ const SHAPE_EMOJIS = {
   star: '★',
   heart: '♥',
   diamond: '◆',
+}
+
+// ─── Letter Land Data ──────────────────────────────────────────────────────
+const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
+const LETTER_DATA = {
+  A: { word: 'Apple', emoji: '🍎' },
+  B: { word: 'Bear', emoji: '🐻' },
+  C: { word: 'Cat', emoji: '🐱' },
+  D: { word: 'Dog', emoji: '🐶' },
+  E: { word: 'Elephant', emoji: '🐘' },
+  F: { word: 'Fish', emoji: '🐟' },
+  G: { word: 'Grape', emoji: '🍇' },
+  H: { word: 'Hat', emoji: '🎩' },
+  I: { word: 'Ice cream', emoji: '🍦' },
+  J: { word: 'Jellyfish', emoji: '🪼' },
+  K: { word: 'Kite', emoji: '🪁' },
+  L: { word: 'Lion', emoji: '🦁' },
+  M: { word: 'Moon', emoji: '🌙' },
+  N: { word: 'Nest', emoji: '🪺' },
+  O: { word: 'Octopus', emoji: '🐙' },
+  P: { word: 'Penguin', emoji: '🐧' },
+  Q: { word: 'Queen', emoji: '👸' },
+  R: { word: 'Rainbow', emoji: '🌈' },
+  S: { word: 'Sun', emoji: '☀️' },
+  T: { word: 'Tree', emoji: '🌳' },
+  U: { word: 'Umbrella', emoji: '☂️' },
+  V: { word: 'Violin', emoji: '🎻' },
+  W: { word: 'Whale', emoji: '🐋' },
+  X: { word: 'Xylophone', emoji: '🎵' },
+  Y: { word: 'Yarn', emoji: '🧶' },
+  Z: { word: 'Zebra', emoji: '🦓' },
+}
+
+// ─── Counting Garden Data ──────────────────────────────────────────────────
+const GARDEN_ITEMS = ['🌷', '🌻', '🌸', '🦋', '🌺', '🍄', '🐛', '🐝', '🌼', '🐞']
+const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']
+
+// ─── Story Time Data ───────────────────────────────────────────────────────
+const STORY_CHARACTERS = [
+  { name: 'Bear', emoji: '🐻' },
+  { name: 'Bunny', emoji: '🐰' },
+  { name: 'Cat', emoji: '🐱' },
+  { name: 'Frog', emoji: '🐸' },
+]
+const STORY_PLACES = [
+  { name: 'a magical forest', emoji: '🌲' },
+  { name: 'a sunny beach', emoji: '🏖️' },
+  { name: 'a tall mountain', emoji: '⛰️' },
+  { name: 'a secret garden', emoji: '🌻' },
+]
+const STORY_ACTIONS = [
+  { name: 'found a treasure chest', emoji: '🎁' },
+  { name: 'made a new friend', emoji: '💕' },
+  { name: 'discovered a magic flower', emoji: '🌺' },
+  { name: 'caught a falling star', emoji: '⭐' },
+]
+const STORY_ENDINGS = [
+  { text: 'And they lived happily ever after!', emoji: '🌈' },
+  { text: 'And they danced with joy!', emoji: '💃' },
+  { text: 'And everyone celebrated together!', emoji: '🎉' },
+  { text: 'And the whole world smiled!', emoji: '😊' },
+]
+
+// ─── Color Discovery Data ──────────────────────────────────────────────────
+const BASE_COLORS_LIST = [
+  { name: 'Red', color: '#EF5350' },
+  { name: 'Blue', color: '#42A5F5' },
+  { name: 'Yellow', color: '#FFEE58' },
+  { name: 'White', color: '#FAFAFA' },
+]
+
+function getColorMix(c1, c2) {
+  const key = [c1, c2].sort().join('+')
+  const mixes = {
+    'Blue+Red': { name: 'Purple', color: '#AB47BC' },
+    'Red+Yellow': { name: 'Orange', color: '#FFA726' },
+    'Blue+Yellow': { name: 'Green', color: '#66BB6A' },
+    'Red+White': { name: 'Pink', color: '#F48FB1' },
+    'Blue+White': { name: 'Light Blue', color: '#81D4FA' },
+    'White+Yellow': { name: 'Cream', color: '#FFF8E1' },
+  }
+  return mixes[key] || null
 }
 
 function ShapeSVG({ shape, size, color }) {
@@ -740,6 +852,577 @@ function PatternGame({ onBack }) {
   )
 }
 
+// ─── Letter Land Screen ────────────────────────────────────────────────────
+function LetterLand({ onBack }) {
+  const [selected, setSelected] = useState(null)
+
+  const handleLetterTap = (letter, idx) => {
+    playLetterSound(idx)
+    setSelected(letter)
+  }
+
+  const currentIdx = selected ? LETTERS.indexOf(selected) : -1
+
+  return (
+    <div style={s.app}>
+      <nav style={s.nav}>
+        <button style={s.backBtn} onClick={onBack} aria-label="Back">←</button>
+        <span style={s.navTitle}>🔤 Letter Land</span>
+      </nav>
+
+      {selected ? (
+        <div style={{
+          flex: 1, display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          padding: '20px', gap: '16px',
+        }}>
+          <div style={{
+            fontSize: 'clamp(80px, 25vw, 140px)', fontWeight: 900,
+            color: COLORS[currentIdx % COLORS.length],
+            animation: 'popIn 0.3s ease-out', lineHeight: 1,
+          }}>
+            {selected}
+          </div>
+          <div style={{ fontSize: '64px', animation: 'popIn 0.3s ease-out 0.1s both' }}>
+            {LETTER_DATA[selected].emoji}
+          </div>
+          <div style={{
+            fontSize: 'clamp(24px, 6vw, 36px)', fontWeight: 800,
+            color: '#5D4E6D', animation: 'fadeSlideIn 0.4s ease-out 0.15s both',
+          }}>
+            {selected} is for {LETTER_DATA[selected].word}
+          </div>
+          <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+            {currentIdx > 0 && (
+              <button
+                style={{ ...s.backBtn, fontSize: '24px' }}
+                onClick={() => handleLetterTap(LETTERS[currentIdx - 1], currentIdx - 1)}
+                aria-label="Previous letter"
+              >
+                ◀
+              </button>
+            )}
+            <button
+              style={{
+                padding: '12px 28px', borderRadius: '20px', border: 'none',
+                background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(8px)',
+                fontSize: '16px', fontWeight: 700, color: '#9E8DAE', cursor: 'pointer',
+                boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+              }}
+              onClick={() => setSelected(null)}
+            >
+              All Letters
+            </button>
+            {currentIdx < 25 && (
+              <button
+                style={{ ...s.backBtn, fontSize: '24px' }}
+                onClick={() => handleLetterTap(LETTERS[currentIdx + 1], currentIdx + 1)}
+                aria-label="Next letter"
+              >
+                ▶
+              </button>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div style={{
+          flex: 1, display: 'flex', flexWrap: 'wrap',
+          alignContent: 'center', justifyContent: 'center',
+          gap: '10px', padding: '16px', overflow: 'auto',
+        }}>
+          {LETTERS.map((letter, i) => (
+            <button
+              key={letter}
+              style={{
+                width: '56px', height: '56px', borderRadius: '16px',
+                border: '2.5px solid rgba(255,255,255,0.8)',
+                background: `${COLORS[i % COLORS.length]}22`,
+                fontSize: '24px', fontWeight: 900,
+                color: COLORS[i % COLORS.length],
+                cursor: 'pointer',
+                animation: `popIn 0.3s ease-out ${i * 0.02}s both`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+              onClick={() => handleLetterTap(letter, i)}
+            >
+              {letter}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Counting Garden Screen ────────────────────────────────────────────────
+function CountingGarden({ onBack }) {
+  const [items, setItems] = useState([])
+  const gardenRef = useRef(null)
+
+  const plantItem = () => {
+    if (items.length >= 10) return
+    playPlant()
+    const gardenEl = gardenRef.current
+    const rect = gardenEl ? gardenEl.getBoundingClientRect() : { width: 300, height: 400 }
+    const emoji = GARDEN_ITEMS[items.length % GARDEN_ITEMS.length]
+    const x = 20 + Math.random() * (rect.width - 80)
+    const y = 20 + Math.random() * (rect.height - 80)
+    setItems(prev => [...prev, { id: prev.length, emoji, x, y }])
+    if (items.length + 1 === 5 || items.length + 1 === 10) {
+      setTimeout(playHappyChime, 300)
+    }
+  }
+
+  const resetGarden = () => {
+    playTap()
+    setItems([])
+  }
+
+  const count = items.length
+
+  return (
+    <div style={s.app}>
+      <nav style={s.nav}>
+        <button style={s.backBtn} onClick={onBack} aria-label="Back">←</button>
+        <span style={s.navTitle}>🌻 Counting</span>
+      </nav>
+
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '16px', gap: '12px', flexShrink: 0,
+      }}>
+        <div style={{
+          fontSize: 'clamp(36px, 10vw, 56px)', fontWeight: 900,
+          color: '#CE93D8', lineHeight: 1,
+          animation: count > 0 ? 'popIn 0.3s ease-out' : 'none',
+        }}>
+          {count}
+        </div>
+        <div style={{
+          fontSize: 'clamp(18px, 5vw, 28px)', fontWeight: 700,
+          color: '#9E8DAE', textTransform: 'capitalize',
+        }}>
+          {NUMBER_WORDS[count]}
+          {count === 1 ? ' thing' : ' things'}
+        </div>
+      </div>
+
+      <div
+        ref={gardenRef}
+        style={{
+          flex: 1, position: 'relative', overflow: 'hidden',
+          background: 'linear-gradient(180deg, #E8F5E9 0%, #C8E6C9 60%, #A5D6A7 100%)',
+          cursor: count < 10 ? 'pointer' : 'default',
+          touchAction: 'manipulation',
+        }}
+        onClick={plantItem}
+      >
+        {items.map(item => (
+          <div
+            key={item.id}
+            style={{
+              position: 'absolute', left: item.x, top: item.y,
+              fontSize: 'clamp(36px, 10vw, 48px)',
+              animation: 'popIn 0.4s ease-out',
+              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))',
+              pointerEvents: 'none',
+            }}
+          >
+            {item.emoji}
+          </div>
+        ))}
+
+        {count < 10 && (
+          <div style={{
+            position: 'absolute', bottom: '50%', left: '50%',
+            transform: 'translate(-50%, 50%)',
+            fontSize: 'clamp(16px, 4vw, 20px)', fontWeight: 700,
+            color: 'rgba(93,78,109,0.4)',
+            textAlign: 'center', pointerEvents: 'none',
+            animation: 'float 3s ease-in-out infinite',
+          }}>
+            {count === 0 ? 'Tap to plant!' : `Tap for more! (${10 - count} left)`}
+          </div>
+        )}
+
+        {count === 10 && (
+          <div style={{
+            position: 'absolute', top: '50%', left: '50%',
+            transform: 'translate(-50%, -50%)',
+            fontSize: '32px', fontWeight: 900, color: '#5D4E6D',
+            textAlign: 'center', animation: 'celebrate 0.5s ease',
+            background: 'rgba(255,255,255,0.8)', padding: '16px 24px',
+            borderRadius: '20px', backdropFilter: 'blur(8px)',
+            pointerEvents: 'none',
+          }}>
+            Garden is full!
+          </div>
+        )}
+      </div>
+
+      {count > 0 && (
+        <div style={{ padding: '12px 16px', display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
+          <button
+            style={{
+              padding: '12px 28px', borderRadius: '20px', border: 'none',
+              background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(8px)',
+              fontSize: '14px', fontWeight: 700, color: '#9E8DAE', cursor: 'pointer',
+              boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+            }}
+            onClick={resetGarden}
+          >
+            Start Over
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Story Time Screen ─────────────────────────────────────────────────────
+function StoryTime({ onBack }) {
+  const [step, setStep] = useState(0)
+  const [character, setCharacter] = useState(null)
+  const [place, setPlace] = useState(null)
+  const [action, setAction] = useState(null)
+  const [ending, setEnding] = useState(null)
+
+  const pickCharacter = (c) => {
+    playTap()
+    setCharacter(c)
+    setStep(1)
+  }
+
+  const pickPlace = (p) => {
+    playTap()
+    setPlace(p)
+    setStep(2)
+  }
+
+  const pickAction = (a) => {
+    playPageTurn()
+    setAction(a)
+    setEnding(STORY_ENDINGS[Math.floor(Math.random() * STORY_ENDINGS.length)])
+    setStep(3)
+    setTimeout(playStoryReveal, 300)
+  }
+
+  const newStory = () => {
+    playTap()
+    setStep(0)
+    setCharacter(null)
+    setPlace(null)
+    setAction(null)
+    setEnding(null)
+  }
+
+  const stepTitles = [
+    'Pick a character',
+    'Where do they go?',
+    'What happens?',
+    'Your story!',
+  ]
+
+  const storyChoiceStyle = (i) => ({
+    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
+    padding: '20px 28px', borderRadius: '24px', border: 'none',
+    background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(8px)',
+    boxShadow: '0 4px 20px rgba(0,0,0,0.06)', cursor: 'pointer',
+    animation: `popIn 0.3s ease-out ${i * 0.1}s both`,
+    transition: 'transform 0.2s',
+  })
+
+  return (
+    <div style={s.app}>
+      <nav style={s.nav}>
+        <button style={s.backBtn} onClick={onBack} aria-label="Back">←</button>
+        <span style={s.navTitle}>📖 Story Time</span>
+      </nav>
+
+      <div style={{
+        flex: 1, display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        padding: '24px 20px', gap: '24px', overflow: 'auto',
+      }}>
+        <div style={{
+          fontSize: 'clamp(20px, 5vw, 28px)', fontWeight: 800,
+          color: '#5D4E6D', textAlign: 'center',
+          animation: 'fadeSlideIn 0.4s ease-out',
+        }}>
+          {stepTitles[step]}
+        </div>
+
+        {step === 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'center' }}>
+            {STORY_CHARACTERS.map((c, i) => (
+              <button key={c.name} style={storyChoiceStyle(i)} onClick={() => pickCharacter(c)}>
+                <span style={{ fontSize: '48px' }}>{c.emoji}</span>
+                <span style={{ fontSize: '16px', fontWeight: 700, color: '#5D4E6D' }}>{c.name}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {step === 1 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'center' }}>
+            {STORY_PLACES.map((p, i) => (
+              <button key={p.name} style={storyChoiceStyle(i)} onClick={() => pickPlace(p)}>
+                <span style={{ fontSize: '48px' }}>{p.emoji}</span>
+                <span style={{ fontSize: '14px', fontWeight: 700, color: '#5D4E6D', textTransform: 'capitalize' }}>{p.name}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {step === 2 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'center' }}>
+            {STORY_ACTIONS.map((a, i) => (
+              <button key={a.name} style={storyChoiceStyle(i)} onClick={() => pickAction(a)}>
+                <span style={{ fontSize: '48px' }}>{a.emoji}</span>
+                <span style={{ fontSize: '14px', fontWeight: 700, color: '#5D4E6D' }}>{a.name}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {step === 3 && character && place && action && ending && (
+          <div style={{
+            display: 'flex', flexDirection: 'column', gap: '20px',
+            maxWidth: '400px', width: '100%',
+          }}>
+            <div style={{
+              background: 'rgba(255,255,255,0.8)', borderRadius: '24px',
+              padding: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
+              backdropFilter: 'blur(8px)',
+            }}>
+              <div style={{
+                textAlign: 'center', fontSize: '60px', marginBottom: '16px',
+                animation: 'popIn 0.4s ease-out',
+              }}>
+                {character.emoji} {place.emoji} {action.emoji}
+              </div>
+              <p style={{
+                fontSize: 'clamp(16px, 4.5vw, 22px)', fontWeight: 700,
+                color: '#5D4E6D', lineHeight: 1.6, textAlign: 'center',
+                animation: 'fadeSlideIn 0.5s ease-out 0.2s both',
+              }}>
+                Once upon a time, <strong>{character.name}</strong> {character.emoji} went to {place.name} {place.emoji}.
+              </p>
+              <p style={{
+                fontSize: 'clamp(16px, 4.5vw, 22px)', fontWeight: 700,
+                color: '#5D4E6D', lineHeight: 1.6, textAlign: 'center',
+                marginTop: '12px',
+                animation: 'fadeSlideIn 0.5s ease-out 0.4s both',
+              }}>
+                There, {character.name} {action.name} {action.emoji}!
+              </p>
+              <p style={{
+                fontSize: 'clamp(16px, 4.5vw, 22px)', fontWeight: 700,
+                color: '#CE93D8', lineHeight: 1.6, textAlign: 'center',
+                marginTop: '12px',
+                animation: 'fadeSlideIn 0.5s ease-out 0.6s both',
+              }}>
+                {ending.text} {ending.emoji}
+              </p>
+            </div>
+
+            <button
+              style={{
+                padding: '16px 32px', borderRadius: '24px', border: 'none',
+                background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(8px)',
+                fontSize: '18px', fontWeight: 800, color: '#CE93D8', cursor: 'pointer',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
+                animation: 'fadeSlideIn 0.5s ease-out 0.8s both',
+                alignSelf: 'center',
+              }}
+              onClick={newStory}
+            >
+              New Story
+            </button>
+          </div>
+        )}
+
+        {step < 3 && (
+          <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+            {[0, 1, 2].map(i => (
+              <div key={i} style={{
+                width: '10px', height: '10px', borderRadius: '50%',
+                background: i <= step ? '#CE93D8' : 'rgba(206,147,216,0.3)',
+                transition: 'background 0.3s',
+              }} />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─── Color Discovery Screen ────────────────────────────────────────────────
+function ColorDiscovery({ onBack }) {
+  const [selected, setSelected] = useState([])
+  const [result, setResult] = useState(null)
+  const [showResult, setShowResult] = useState(false)
+
+  const pickColor = (color) => {
+    if (showResult) return
+    if (selected.length >= 2) return
+    playTap()
+    const next = [...selected, color]
+    setSelected(next)
+    if (next.length === 2) {
+      const mix = getColorMix(next[0].name, next[1].name)
+      if (mix) {
+        setResult(mix)
+        setTimeout(() => {
+          setShowResult(true)
+          playMix()
+        }, 600)
+      } else {
+        setResult({ name: next[0].name === next[1].name ? next[0].name : 'Hmm...', color: next[0].color })
+        setTimeout(() => {
+          setShowResult(true)
+          playWobble()
+        }, 600)
+      }
+    }
+  }
+
+  const reset = () => {
+    playTap()
+    setSelected([])
+    setResult(null)
+    setShowResult(false)
+  }
+
+  return (
+    <div style={s.app}>
+      <nav style={s.nav}>
+        <button style={s.backBtn} onClick={onBack} aria-label="Back">←</button>
+        <span style={s.navTitle}>🎨 Color Mix</span>
+      </nav>
+
+      <div style={{
+        flex: 1, display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        padding: '24px 20px', gap: '28px', overflow: 'auto',
+      }}>
+        <div style={{
+          fontSize: 'clamp(18px, 4.5vw, 24px)', fontWeight: 800,
+          color: '#5D4E6D', textAlign: 'center',
+        }}>
+          {selected.length === 0 ? 'Pick a color!' :
+           selected.length === 1 ? 'Pick another color!' :
+           showResult ? `You made ${result.name}!` : 'Mixing...'}
+        </div>
+
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '16px',
+          minHeight: '100px', flexWrap: 'wrap', justifyContent: 'center',
+        }}>
+          <div style={{
+            width: '80px', height: '80px', borderRadius: '50%',
+            border: selected[0] ? 'none' : '3px dashed #CE93D8',
+            background: selected[0] ? selected[0].color : 'rgba(206,147,216,0.1)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '28px', color: '#CE93D8',
+            animation: selected[0] ? 'popIn 0.3s ease-out' : 'none',
+            boxShadow: selected[0] ? `0 4px 20px ${selected[0].color}44` : 'none',
+          }}>
+            {!selected[0] && '?'}
+          </div>
+
+          <span style={{ fontSize: '28px', fontWeight: 900, color: '#CE93D8' }}>+</span>
+
+          <div style={{
+            width: '80px', height: '80px', borderRadius: '50%',
+            border: selected[1] ? 'none' : '3px dashed #CE93D8',
+            background: selected[1] ? selected[1].color : 'rgba(206,147,216,0.1)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '28px', color: '#CE93D8',
+            animation: selected[1] ? 'popIn 0.3s ease-out' : 'none',
+            boxShadow: selected[1] ? `0 4px 20px ${selected[1].color}44` : 'none',
+          }}>
+            {!selected[1] && '?'}
+          </div>
+
+          {selected.length === 2 && (
+            <>
+              <span style={{ fontSize: '28px', fontWeight: 900, color: '#CE93D8' }}>=</span>
+              <div style={{
+                width: '80px', height: '80px', borderRadius: '50%',
+                background: showResult ? result.color : 'rgba(206,147,216,0.1)',
+                border: showResult ? 'none' : '3px dashed #CE93D8',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '28px', color: '#CE93D8',
+                animation: showResult ? 'celebrate 0.5s ease' : 'none',
+                boxShadow: showResult ? `0 4px 20px ${result.color}44` : 'none',
+              }}>
+                {!showResult && '?'}
+              </div>
+            </>
+          )}
+        </div>
+
+        {!showResult && (
+          <div style={{
+            display: 'flex', gap: '16px', flexWrap: 'wrap',
+            justifyContent: 'center',
+          }}>
+            {BASE_COLORS_LIST.map((c, i) => (
+              <button
+                key={c.name}
+                style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
+                  padding: '16px 24px', borderRadius: '20px', border: 'none',
+                  background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(8px)',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.06)', cursor: 'pointer',
+                  animation: `popIn 0.3s ease-out ${i * 0.08}s both`,
+                }}
+                onClick={() => pickColor(c)}
+              >
+                <div style={{
+                  width: '48px', height: '48px', borderRadius: '50%',
+                  background: c.color,
+                  border: c.name === 'White' ? '2px solid #E0E0E0' : 'none',
+                  boxShadow: `0 2px 8px ${c.color}44`,
+                }} />
+                <span style={{ fontSize: '14px', fontWeight: 700, color: '#5D4E6D' }}>{c.name}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {showResult && result && (
+          <div style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px',
+            animation: 'fadeSlideIn 0.4s ease-out',
+          }}>
+            <div style={{
+              fontSize: 'clamp(24px, 7vw, 40px)', fontWeight: 900,
+              color: result.color,
+              textShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            }}>
+              {result.name}
+            </div>
+            <button
+              style={{
+                padding: '14px 32px', borderRadius: '24px', border: 'none',
+                background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(8px)',
+                fontSize: '16px', fontWeight: 800, color: '#CE93D8', cursor: 'pointer',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
+              }}
+              onClick={reset}
+            >
+              Mix Again
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ─── Main App ───────────────────────────────────────────────────────────────
 export default function App() {
   const [screen, setScreen] = useState('home')
@@ -803,6 +1486,22 @@ export default function App() {
     return <PatternGame onBack={() => setScreen('home')} />
   }
 
+  if (screen === 'letters') {
+    return <LetterLand onBack={() => setScreen('home')} />
+  }
+
+  if (screen === 'counting') {
+    return <CountingGarden onBack={() => setScreen('home')} />
+  }
+
+  if (screen === 'story') {
+    return <StoryTime onBack={() => setScreen('home')} />
+  }
+
+  if (screen === 'colors') {
+    return <ColorDiscovery onBack={() => setScreen('home')} />
+  }
+
   return (
     <div style={s.app}>
       <div style={s.home}>
@@ -835,6 +1534,58 @@ export default function App() {
             <div>
               <div style={s.toyLabel}>Patterns</div>
               <div style={s.toyDesc}>Find the missing shape</div>
+            </div>
+          </button>
+
+          <button
+            style={s.toyButton(2)}
+            onClick={() => { playTap(); setScreen('letters') }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.03)'; e.currentTarget.style.boxShadow = '0 6px 28px rgba(0,0,0,0.1)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
+          >
+            <span style={s.toyIcon}>🔤</span>
+            <div>
+              <div style={s.toyLabel}>Letter Land</div>
+              <div style={s.toyDesc}>Learn letters &amp; words</div>
+            </div>
+          </button>
+
+          <button
+            style={s.toyButton(3)}
+            onClick={() => { playTap(); setScreen('counting') }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.03)'; e.currentTarget.style.boxShadow = '0 6px 28px rgba(0,0,0,0.1)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
+          >
+            <span style={s.toyIcon}>🌻</span>
+            <div>
+              <div style={s.toyLabel}>Counting</div>
+              <div style={s.toyDesc}>Plant &amp; count to ten</div>
+            </div>
+          </button>
+
+          <button
+            style={s.toyButton(4)}
+            onClick={() => { playTap(); setScreen('story') }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.03)'; e.currentTarget.style.boxShadow = '0 6px 28px rgba(0,0,0,0.1)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
+          >
+            <span style={s.toyIcon}>📖</span>
+            <div>
+              <div style={s.toyLabel}>Story Time</div>
+              <div style={s.toyDesc}>Build your own story</div>
+            </div>
+          </button>
+
+          <button
+            style={s.toyButton(5)}
+            onClick={() => { playTap(); setScreen('colors') }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.03)'; e.currentTarget.style.boxShadow = '0 6px 28px rgba(0,0,0,0.1)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
+          >
+            <span style={s.toyIcon}>🎨</span>
+            <div>
+              <div style={s.toyLabel}>Color Mix</div>
+              <div style={s.toyDesc}>Mix colors together</div>
             </div>
           </button>
         </div>
