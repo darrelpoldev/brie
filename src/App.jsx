@@ -397,7 +397,7 @@ const s = {
   badge: {
     position: 'absolute',
     top: '16px',
-    right: '16px',
+    left: '16px',
     background: 'linear-gradient(135deg, #FFE082, #FFAB91)',
     color: '#7B5E3B',
     fontWeight: 800,
@@ -407,6 +407,27 @@ const s = {
     boxShadow: '0 2px 10px rgba(255,171,145,0.3)',
     animation: 'popIn 0.6s ease-out',
   },
+  installChip: {
+    position: 'absolute',
+    top: '16px',
+    right: '16px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    background: 'rgba(255,255,255,0.85)',
+    backdropFilter: 'blur(8px)',
+    color: '#5D4E6D',
+    fontWeight: 700,
+    fontSize: '12px',
+    padding: '6px 14px',
+    borderRadius: '20px',
+    border: 'none',
+    boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
+    animation: 'popIn 0.6s ease-out 0.2s both',
+    cursor: 'pointer',
+    WebkitTapHighlightColor: 'transparent',
+    transition: 'transform 0.2s, box-shadow 0.2s',
+  },
   footer: {
     fontSize: '12px',
     fontWeight: 600,
@@ -414,40 +435,6 @@ const s = {
     textAlign: 'center',
     lineHeight: 1.6,
     padding: '8px 0',
-  },
-  offlineBanner: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '10px',
-    padding: '14px 24px',
-    borderRadius: '20px',
-    border: 'none',
-    background: 'rgba(255,255,255,0.75)',
-    backdropFilter: 'blur(8px)',
-    boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
-    cursor: 'pointer',
-    width: '100%',
-    maxWidth: '400px',
-    animation: 'fadeSlideIn 0.5s ease-out 0.3s both',
-    transition: 'transform 0.2s, box-shadow 0.2s',
-    WebkitTapHighlightColor: 'transparent',
-  },
-  offlineBannerText: {
-    fontSize: '15px',
-    fontWeight: 700,
-    color: '#5D4E6D',
-  },
-  offlineBannerDesc: {
-    fontSize: '12px',
-    fontWeight: 600,
-    color: '#A99BBE',
-    marginTop: '1px',
-  },
-  offlineBannerIcon: {
-    fontSize: '28px',
-    lineHeight: 1,
-    flexShrink: 0,
   },
 
   // Nav bar
@@ -1503,7 +1490,24 @@ export default function App() {
   return (
     <div style={s.app}>
       <div style={s.home}>
-        <div style={s.badge}>FREE 🎈</div>
+        <div style={s.badge}>Free to Play 🎈</div>
+
+        {installPrompt ? (
+          <button
+            style={s.installChip}
+            onClick={handleInstallClick}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.12)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
+          >
+            <span>📲</span>
+            <span>Add to Home Screen</span>
+          </button>
+        ) : (
+          <div style={{ ...s.installChip, cursor: 'default' }}>
+            <span>{isInstalled ? '✅' : '📡'}</span>
+            <span>{isInstalled ? 'Installed' : 'Works Offline'}</span>
+          </div>
+        )}
 
         <h1 style={s.title}>BRIE</h1>
         <p style={s.subtitle}>Play, explore &amp; discover</p>
@@ -1529,29 +1533,6 @@ export default function App() {
             </button>
           ))}
         </div>
-
-        {installPrompt ? (
-          <button
-            style={s.offlineBanner}
-            onClick={handleInstallClick}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.03)'; e.currentTarget.style.boxShadow = '0 6px 28px rgba(0,0,0,0.1)' }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
-          >
-            <span style={s.offlineBannerIcon}>📲</span>
-            <div style={{ textAlign: 'left' }}>
-              <div style={s.offlineBannerText}>Install to Play Offline</div>
-              <div style={s.offlineBannerDesc}>No internet needed — play anytime, anywhere</div>
-            </div>
-          </button>
-        ) : (
-          <div style={{ ...s.offlineBanner, cursor: 'default' }}>
-            <span style={s.offlineBannerIcon}>{isInstalled ? '✅' : '📡'}</span>
-            <div style={{ textAlign: 'left' }}>
-              <div style={s.offlineBannerText}>{isInstalled ? 'Ready to Play Offline' : 'Works Without Internet'}</div>
-              <div style={s.offlineBannerDesc}>{isInstalled ? 'Installed — play anytime, anywhere' : 'Free to play, no wifi needed'}</div>
-            </div>
-          </div>
-        )}
 
         <footer style={s.footer}>
           No ads · No rules · No data collected · Just play 🌈
