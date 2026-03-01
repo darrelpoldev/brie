@@ -1413,6 +1413,7 @@ export default function App() {
   const [screen, setScreen] = useState('home')
   const [installPrompt, setInstallPrompt] = useState(null)
   const [isInstalled, setIsInstalled] = useState(false)
+  const [showInstallTip, setShowInstallTip] = useState(false)
 
   // Inject global styles once
   useEffect(() => {
@@ -1463,6 +1464,12 @@ export default function App() {
     }
   }
 
+  const handleOfflineChipClick = () => {
+    if (isInstalled) return
+    playTap()
+    setShowInstallTip(prev => !prev)
+  }
+
   if (screen === 'shapes') {
     return <ShapePlayground onBack={() => setScreen('home')} />
   }
@@ -1503,9 +1510,32 @@ export default function App() {
             <span>Add to Home Screen</span>
           </button>
         ) : (
-          <div style={{ ...s.installChip, cursor: 'default' }}>
-            <span>{isInstalled ? '✅' : '📡'}</span>
-            <span>{isInstalled ? 'Installed' : 'Works Offline'}</span>
+          <div style={{ position: 'absolute', top: '16px', right: '16px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px', zIndex: 10 }}>
+            <button
+              style={{ ...s.installChip, position: 'relative', top: 'auto', right: 'auto', cursor: isInstalled ? 'default' : 'pointer' }}
+              onClick={handleOfflineChipClick}
+              onMouseEnter={(e) => { if (!isInstalled) { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.12)' } }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
+            >
+              <span>{isInstalled ? '✅' : '📡'}</span>
+              <span>{isInstalled ? 'Installed' : 'Works Offline'}</span>
+            </button>
+            {showInstallTip && !isInstalled && (
+              <div style={{
+                background: 'white',
+                borderRadius: '12px',
+                padding: '12px 16px',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                fontSize: '13px',
+                lineHeight: '1.5',
+                color: '#5D4E6D',
+                maxWidth: '220px',
+                animation: 'popIn 0.3s ease-out',
+              }}>
+                <strong>Add to Home Screen</strong><br />
+                Tap your browser's <strong>Share</strong> or <strong>Menu</strong> button, then choose <strong>"Add to Home Screen"</strong>.
+              </div>
+            )}
           </div>
         )}
 
