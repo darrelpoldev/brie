@@ -1,4 +1,4 @@
-# BRIE 🎈
+# [BRIE](https://darrelpoldev.github.io/brie/) 🎈
 
 A free, Montessori-inspired toddler play app for ages 2–4.
 
