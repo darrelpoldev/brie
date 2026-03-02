@@ -71,6 +71,13 @@ function playStoryReveal() {
   setTimeout(() => playTone(784, 0.3, 'sine', 0.1), 450)
 }
 
+function playCombine() {
+  playTone(330, 0.12, 'sine', 0.1)
+  setTimeout(() => playTone(440, 0.12, 'sine', 0.1), 100)
+  setTimeout(() => playTone(554, 0.12, 'sine', 0.1), 200)
+  setTimeout(() => playTone(659, 0.25, 'sine', 0.12), 300)
+}
+
 // ─── Color palette ──────────────────────────────────────────────────────────
 const COLORS = ['#FF8A80', '#FFAB91', '#CE93D8', '#81D4FA', '#A5D6A7', '#FFE082', '#F48FB1', '#80CBC4']
 
@@ -1408,6 +1415,321 @@ function ColorDiscovery({ onBack }) {
   )
 }
 
+// ─── Drag & Drop Combine Game ───────────────────────────────────────────────
+const COMBINE_ITEMS = [
+  { id: 'sun', emoji: '☀️', label: 'Sun' },
+  { id: 'water', emoji: '💧', label: 'Water' },
+  { id: 'dirt', emoji: '🟤', label: 'Dirt' },
+  { id: 'seed', emoji: '🌱', label: 'Seed' },
+  { id: 'snow', emoji: '❄️', label: 'Snow' },
+  { id: 'egg', emoji: '🥚', label: 'Egg' },
+  { id: 'milk', emoji: '🥛', label: 'Milk' },
+  { id: 'bread', emoji: '🍞', label: 'Bread' },
+]
+
+const COMBINE_RECIPES = {
+  'water+dirt': { emoji: '🪨', label: 'Mud!' },
+  'dirt+water': { emoji: '🪨', label: 'Mud!' },
+  'sun+water': { emoji: '🌈', label: 'Rainbow!' },
+  'water+sun': { emoji: '🌈', label: 'Rainbow!' },
+  'sun+snow': { emoji: '💦', label: 'Puddle!' },
+  'snow+sun': { emoji: '💦', label: 'Puddle!' },
+  'dirt+seed': { emoji: '🌻', label: 'Flower!' },
+  'seed+dirt': { emoji: '🌻', label: 'Flower!' },
+  'water+seed': { emoji: '🌿', label: 'Plant!' },
+  'seed+water': { emoji: '🌿', label: 'Plant!' },
+  'sun+egg': { emoji: '🐣', label: 'Chick!' },
+  'egg+sun': { emoji: '🐣', label: 'Chick!' },
+  'snow+water': { emoji: '🧊', label: 'Ice!' },
+  'water+snow': { emoji: '🧊', label: 'Ice!' },
+  'milk+bread': { emoji: '🍰', label: 'Cake!' },
+  'bread+milk': { emoji: '🍰', label: 'Cake!' },
+  'sun+dirt': { emoji: '🏜️', label: 'Desert!' },
+  'dirt+sun': { emoji: '🏜️', label: 'Desert!' },
+  'sun+seed': { emoji: '🌳', label: 'Tree!' },
+  'seed+sun': { emoji: '🌳', label: 'Tree!' },
+  'milk+egg': { emoji: '🧁', label: 'Cupcake!' },
+  'egg+milk': { emoji: '🧁', label: 'Cupcake!' },
+  'snow+dirt': { emoji: '⛄', label: 'Snowman!' },
+  'dirt+snow': { emoji: '⛄', label: 'Snowman!' },
+}
+
+function MixAndMatch({ onBack }) {
+  const [items, setItems] = useState(COMBINE_ITEMS)
+  const [dragging, setDragging] = useState(null)
+  const [dragPos, setDragPos] = useState({ x: 0, y: 0 })
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
+  const [result, setResult] = useState(null)
+  const [discoveries, setDiscoveries] = useState([])
+  const itemRefs = useRef({})
+  const containerRef = useRef(null)
+
+  const totalRecipes = Object.keys(COMBINE_RECIPES).length / 2
+
+  const getPos = (e) => {
+    const t = e.touches ? e.touches[0] : e
+    return { x: t.clientX, y: t.clientY }
+  }
+
+  const handleDragStart = useCallback((e, item) => {
+    e.preventDefault()
+    const pos = getPos(e)
+    const el = itemRefs.current[item.id]
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    setDragOffset({ x: pos.x - rect.left - rect.width / 2, y: pos.y - rect.top - rect.height / 2 })
+    setDragPos(pos)
+    setDragging(item)
+    playTap()
+  }, [])
+
+  const handleDragMove = useCallback((e) => {
+    if (!dragging) return
+    e.preventDefault()
+    setDragPos(getPos(e))
+  }, [dragging])
+
+  const handleDragEnd = useCallback(() => {
+    if (!dragging) return
+
+    // Check if dropped on another item
+    let found = null
+    for (const item of items) {
+      if (item.id === dragging.id) continue
+      const el = itemRefs.current[item.id]
+      if (!el) continue
+      const rect = el.getBoundingClientRect()
+      if (
+        dragPos.x >= rect.left && dragPos.x <= rect.right &&
+        dragPos.y >= rect.top && dragPos.y <= rect.bottom
+      ) {
+        found = item
+        break
+      }
+    }
+
+    if (found) {
+      const key = `${dragging.id}+${found.id}`
+      const recipe = COMBINE_RECIPES[key]
+      if (recipe) {
+        setResult({ from: dragging, to: found, ...recipe })
+        playCombine()
+        setDiscoveries(prev => {
+          const sorted = [dragging.id, found.id].sort().join('+')
+          if (prev.includes(sorted)) return prev
+          return [...prev, sorted]
+        })
+      } else {
+        setResult({ from: dragging, to: found, emoji: '❓', label: 'Hmm... try something else!' })
+        playWobble()
+      }
+    }
+
+    setDragging(null)
+  }, [dragging, dragPos, items])
+
+  useEffect(() => {
+    if (!dragging) return
+    const onMove = (e) => handleDragMove(e)
+    const onEnd = () => handleDragEnd()
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onEnd)
+    window.addEventListener('touchmove', onMove, { passive: false })
+    window.addEventListener('touchend', onEnd)
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onEnd)
+      window.removeEventListener('touchmove', onMove)
+      window.removeEventListener('touchend', onEnd)
+    }
+  }, [dragging, handleDragMove, handleDragEnd])
+
+  const dismissResult = () => {
+    playTap()
+    setResult(null)
+  }
+
+  return (
+    <div style={s.app}>
+      <nav style={s.nav}>
+        <button style={s.backBtn} onClick={onBack} aria-label="Back">←</button>
+        <span style={s.navTitle}>🧩 Mix & Match</span>
+      </nav>
+
+      <div
+        ref={containerRef}
+        style={{
+          flex: 1, display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          padding: '24px 20px', gap: '20px', overflow: 'auto',
+          position: 'relative',
+        }}
+      >
+        {/* Progress */}
+        <div style={{
+          fontSize: 'clamp(13px, 3.5vw, 16px)', fontWeight: 700,
+          color: '#9E8DAE', textAlign: 'center',
+        }}>
+          {discoveries.length} / {totalRecipes} discovered
+        </div>
+
+        {/* Instruction */}
+        <div style={{
+          fontSize: 'clamp(18px, 4.5vw, 24px)', fontWeight: 800,
+          color: '#5D4E6D', textAlign: 'center',
+          animation: 'fadeSlideIn 0.4s ease-out',
+        }}>
+          Drag one thing onto another!
+        </div>
+
+        {/* Items grid */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gap: '12px',
+          width: '100%',
+          maxWidth: '380px',
+        }}>
+          {items.map((item, i) => (
+            <div
+              key={item.id}
+              ref={(el) => { itemRefs.current[item.id] = el }}
+              style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                gap: '6px', padding: '14px 8px', borderRadius: '20px',
+                background: dragging && dragging.id !== item.id
+                  ? 'rgba(206,147,216,0.15)'
+                  : 'rgba(255,255,255,0.75)',
+                backdropFilter: 'blur(8px)',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
+                cursor: 'grab',
+                animation: `popIn 0.3s ease-out ${i * 0.05}s both`,
+                transition: 'background 0.2s, transform 0.15s',
+                opacity: dragging && dragging.id === item.id ? 0.4 : 1,
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+                touchAction: 'none',
+              }}
+              onMouseDown={(e) => handleDragStart(e, item)}
+              onTouchStart={(e) => handleDragStart(e, item)}
+            >
+              <span style={{ fontSize: 'clamp(32px, 8vw, 44px)', lineHeight: 1, pointerEvents: 'none' }}>
+                {item.emoji}
+              </span>
+              <span style={{
+                fontSize: 'clamp(11px, 3vw, 14px)', fontWeight: 700,
+                color: '#5D4E6D', pointerEvents: 'none',
+              }}>
+                {item.label}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* Discoveries */}
+        {discoveries.length > 0 && (
+          <div style={{
+            display: 'flex', flexWrap: 'wrap', gap: '8px',
+            justifyContent: 'center', maxWidth: '380px',
+            animation: 'fadeIn 0.3s ease-out',
+          }}>
+            {discoveries.map((key) => {
+              const recipe = COMBINE_RECIPES[key]
+              return (
+                <div key={key} style={{
+                  padding: '6px 12px', borderRadius: '16px',
+                  background: 'rgba(255,255,255,0.7)',
+                  fontSize: '20px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                }}>
+                  {recipe.emoji}
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Dragging ghost */}
+      {dragging && (
+        <div style={{
+          position: 'fixed',
+          left: dragPos.x - 36,
+          top: dragPos.y - 36,
+          width: '72px', height: '72px',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '48px',
+          pointerEvents: 'none',
+          zIndex: 1000,
+          filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.2))',
+          transition: 'none',
+        }}>
+          {dragging.emoji}
+        </div>
+      )}
+
+      {/* Result overlay */}
+      {result && (
+        <div
+          style={{
+            position: 'fixed', inset: 0,
+            background: 'rgba(0,0,0,0.3)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 2000,
+            animation: 'fadeIn 0.2s ease-out',
+          }}
+          onClick={dismissResult}
+        >
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.95)',
+              borderRadius: '28px',
+              padding: '32px 40px',
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', gap: '16px',
+              boxShadow: '0 8px 40px rgba(0,0,0,0.15)',
+              animation: 'popIn 0.4s ease-out',
+              maxWidth: '320px',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '40px' }}>
+              <span>{result.from.emoji}</span>
+              <span style={{ fontSize: '24px', fontWeight: 900, color: '#CE93D8' }}>+</span>
+              <span>{result.to.emoji}</span>
+              <span style={{ fontSize: '24px', fontWeight: 900, color: '#CE93D8' }}>=</span>
+            </div>
+            <div style={{
+              fontSize: '72px', lineHeight: 1,
+              animation: result.label.includes('Hmm') ? 'shake 0.4s ease' : 'celebrate 0.6s ease',
+            }}>
+              {result.emoji}
+            </div>
+            <div style={{
+              fontSize: 'clamp(20px, 5vw, 28px)', fontWeight: 900,
+              color: result.label.includes('Hmm') ? '#9E8DAE' : '#5D4E6D',
+            }}>
+              {result.label}
+            </div>
+            <button
+              style={{
+                padding: '12px 28px', borderRadius: '20px', border: 'none',
+                background: 'rgba(206,147,216,0.15)',
+                fontSize: '16px', fontWeight: 800, color: '#CE93D8', cursor: 'pointer',
+                transition: 'transform 0.2s',
+              }}
+              onClick={dismissResult}
+            >
+              Try More!
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Main App ───────────────────────────────────────────────────────────────
 export default function App() {
   const [screen, setScreen] = useState('home')
@@ -1494,6 +1816,10 @@ export default function App() {
     return <ColorDiscovery onBack={() => setScreen('home')} />
   }
 
+  if (screen === 'combine') {
+    return <MixAndMatch onBack={() => setScreen('home')} />
+  }
+
   return (
     <div style={s.app}>
       <div style={s.home}>
@@ -1550,6 +1876,7 @@ export default function App() {
             { icon: '🌻', label: 'Counting', screen: 'counting' },
             { icon: '📖', label: 'Stories', screen: 'story' },
             { icon: '🎨', label: 'Colors', screen: 'colors' },
+            { icon: '🧩', label: 'Mix & Match', screen: 'combine' },
           ].map((game, idx) => (
             <button
               key={game.screen}
