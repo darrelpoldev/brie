@@ -1461,6 +1461,7 @@ function MixAndMatch({ onBack }) {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const [result, setResult] = useState(null)
   const [discoveries, setDiscoveries] = useState([])
+  const [selected, setSelected] = useState(null)
   const itemRefs = useRef({})
   const containerRef = useRef(null)
 
@@ -1480,6 +1481,7 @@ function MixAndMatch({ onBack }) {
     setDragOffset({ x: pos.x - rect.left - rect.width / 2, y: pos.y - rect.top - rect.height / 2 })
     setDragPos(pos)
     setDragging(item)
+    setSelected(null)
     playTap()
   }, [])
 
@@ -1544,6 +1546,32 @@ function MixAndMatch({ onBack }) {
     }
   }, [dragging, handleDragMove, handleDragEnd])
 
+  const handleTap = useCallback((item) => {
+    if (!selected) {
+      setSelected(item)
+      playTap()
+    } else if (selected.id === item.id) {
+      setSelected(null)
+      playTap()
+    } else {
+      const key = `${selected.id}+${item.id}`
+      const recipe = COMBINE_RECIPES[key]
+      if (recipe) {
+        setResult({ from: selected, to: item, ...recipe })
+        playCombine()
+        setDiscoveries(prev => {
+          const sorted = [selected.id, item.id].sort().join('+')
+          if (prev.includes(sorted)) return prev
+          return [...prev, sorted]
+        })
+      } else {
+        setResult({ from: selected, to: item, emoji: '❓', label: 'Hmm... try something else!' })
+        playWobble()
+      }
+      setSelected(null)
+    }
+  }, [selected])
+
   const dismissResult = () => {
     playTap()
     setResult(null)
@@ -1573,13 +1601,34 @@ function MixAndMatch({ onBack }) {
           {discoveries.length} / {totalRecipes} discovered
         </div>
 
-        {/* Instruction */}
+        {/* Equation display */}
         <div style={{
-          fontSize: 'clamp(18px, 4.5vw, 24px)', fontWeight: 800,
-          color: '#5D4E6D', textAlign: 'center',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          gap: '10px', minHeight: '56px',
           animation: 'fadeSlideIn 0.4s ease-out',
         }}>
-          Drag one thing onto another!
+          {selected ? (
+            <>
+              <span style={{ fontSize: 'clamp(32px, 8vw, 44px)', lineHeight: 1 }}>{selected.emoji}</span>
+              <span style={{ fontSize: 'clamp(20px, 5vw, 28px)', fontWeight: 900, color: '#CE93D8' }}>+</span>
+              <span style={{
+                fontSize: 'clamp(32px, 8vw, 44px)', lineHeight: 1,
+                opacity: 0.3,
+              }}>?</span>
+              <span style={{ fontSize: 'clamp(20px, 5vw, 28px)', fontWeight: 900, color: '#CE93D8' }}>=</span>
+              <span style={{
+                fontSize: 'clamp(32px, 8vw, 44px)', lineHeight: 1,
+                opacity: 0.3,
+              }}>?</span>
+            </>
+          ) : (
+            <span style={{
+              fontSize: 'clamp(18px, 4.5vw, 24px)', fontWeight: 800,
+              color: '#5D4E6D', textAlign: 'center',
+            }}>
+              Tap two things to mix!
+            </span>
+          )}
         </div>
 
         {/* Items grid */}
@@ -1597,19 +1646,25 @@ function MixAndMatch({ onBack }) {
               style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
                 gap: '6px', padding: '14px 8px', borderRadius: '20px',
-                background: dragging && dragging.id !== item.id
-                  ? 'rgba(206,147,216,0.15)'
-                  : 'rgba(255,255,255,0.75)',
+                background: selected && selected.id === item.id
+                  ? 'rgba(206,147,216,0.35)'
+                  : dragging && dragging.id !== item.id
+                    ? 'rgba(206,147,216,0.15)'
+                    : 'rgba(255,255,255,0.75)',
                 backdropFilter: 'blur(8px)',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
-                cursor: 'grab',
+                boxShadow: selected && selected.id === item.id
+                  ? '0 4px 20px rgba(206,147,216,0.3)'
+                  : '0 4px 20px rgba(0,0,0,0.06)',
+                cursor: 'pointer',
                 animation: `popIn 0.3s ease-out ${i * 0.05}s both`,
-                transition: 'background 0.2s, transform 0.15s',
+                transition: 'background 0.2s, transform 0.15s, box-shadow 0.2s',
                 opacity: dragging && dragging.id === item.id ? 0.4 : 1,
+                transform: selected && selected.id === item.id ? 'scale(1.08)' : 'scale(1)',
                 userSelect: 'none',
                 WebkitUserSelect: 'none',
                 touchAction: 'none',
               }}
+              onClick={() => handleTap(item)}
               onMouseDown={(e) => handleDragStart(e, item)}
               onTouchStart={(e) => handleDragStart(e, item)}
             >
