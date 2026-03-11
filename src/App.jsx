@@ -1425,34 +1425,81 @@ const COMBINE_ITEMS = [
   { id: 'egg', emoji: '🥚', label: 'Egg' },
   { id: 'milk', emoji: '🥛', label: 'Milk' },
   { id: 'bread', emoji: '🍞', label: 'Bread' },
+  { id: 'fire', emoji: '🔥', label: 'Fire' },
+  { id: 'wind', emoji: '🌬️', label: 'Wind' },
+  { id: 'star', emoji: '⭐', label: 'Star' },
+  { id: 'flower', emoji: '🌸', label: 'Flower' },
+  { id: 'cloud', emoji: '☁️', label: 'Cloud' },
+  { id: 'fruit', emoji: '🍎', label: 'Fruit' },
 ]
 
-const COMBINE_RECIPES = {
-  'water+dirt': { emoji: '🪨', label: 'Mud!' },
-  'dirt+water': { emoji: '🪨', label: 'Mud!' },
-  'sun+water': { emoji: '🌈', label: 'Rainbow!' },
-  'water+sun': { emoji: '🌈', label: 'Rainbow!' },
-  'sun+snow': { emoji: '💦', label: 'Puddle!' },
-  'snow+sun': { emoji: '💦', label: 'Puddle!' },
-  'dirt+seed': { emoji: '🌻', label: 'Flower!' },
-  'seed+dirt': { emoji: '🌻', label: 'Flower!' },
-  'water+seed': { emoji: '🌿', label: 'Plant!' },
-  'seed+water': { emoji: '🌿', label: 'Plant!' },
-  'sun+egg': { emoji: '🐣', label: 'Chick!' },
-  'egg+sun': { emoji: '🐣', label: 'Chick!' },
-  'snow+water': { emoji: '🧊', label: 'Ice!' },
-  'water+snow': { emoji: '🧊', label: 'Ice!' },
-  'milk+bread': { emoji: '🍰', label: 'Cake!' },
-  'bread+milk': { emoji: '🍰', label: 'Cake!' },
-  'sun+dirt': { emoji: '🏜️', label: 'Desert!' },
-  'dirt+sun': { emoji: '🏜️', label: 'Desert!' },
-  'sun+seed': { emoji: '🌳', label: 'Tree!' },
-  'seed+sun': { emoji: '🌳', label: 'Tree!' },
-  'milk+egg': { emoji: '🧁', label: 'Cupcake!' },
-  'egg+milk': { emoji: '🧁', label: 'Cupcake!' },
-  'snow+dirt': { emoji: '⛄', label: 'Snowman!' },
-  'dirt+snow': { emoji: '⛄', label: 'Snowman!' },
-}
+// Helper to build bidirectional recipes from a compact list
+const _recipes = [
+  // Sun combos
+  ['sun', 'water', '🌈', 'Rainbow!'],
+  ['sun', 'dirt', '🏜️', 'Desert!'],
+  ['sun', 'seed', '🌳', 'Tree!'],
+  ['sun', 'snow', '💦', 'Puddle!'],
+  ['sun', 'egg', '🐣', 'Chick!'],
+  ['sun', 'flower', '🐝', 'Bee!'],
+  ['sun', 'cloud', '🌅', 'Sunset!'],
+  ['sun', 'fire', '🌋', 'Volcano!'],
+  ['sun', 'star', '🌟', 'Superstar!'],
+  ['sun', 'fruit', '🍊', 'Orange!'],
+  ['sun', 'wind', '🪁', 'Kite!'],
+  // Water combos
+  ['water', 'dirt', '🪨', 'Mud!'],
+  ['water', 'seed', '🌿', 'Plant!'],
+  ['water', 'snow', '🧊', 'Ice!'],
+  ['water', 'cloud', '🌧️', 'Rain!'],
+  ['water', 'flower', '🪴', 'Garden!'],
+  ['water', 'fire', '♨️', 'Steam!'],
+  ['water', 'fruit', '🧃', 'Juice!'],
+  ['water', 'star', '✨', 'Sparkle!'],
+  ['water', 'wind', '🌊', 'Wave!'],
+  // Dirt combos
+  ['dirt', 'seed', '🌻', 'Flower!'],
+  ['dirt', 'snow', '⛄', 'Snowman!'],
+  ['dirt', 'fire', '🧱', 'Brick!'],
+  ['dirt', 'wind', '🌪️', 'Tornado!'],
+  ['dirt', 'star', '💎', 'Diamond!'],
+  ['dirt', 'cloud', '🌫️', 'Fog!'],
+  ['dirt', 'fruit', '🥕', 'Carrot!'],
+  // Seed combos
+  ['seed', 'snow', '🎄', 'Pine Tree!'],
+  ['seed', 'fire', '🍿', 'Popcorn!'],
+  ['seed', 'wind', '🍃', 'Leaves!'],
+  ['seed', 'flower', '💐', 'Bouquet!'],
+  ['seed', 'cloud', '🍄', 'Mushroom!'],
+  ['seed', 'fruit', '🍇', 'Grapes!'],
+  // Snow combos
+  ['snow', 'wind', '🌨️', 'Blizzard!'],
+  ['snow', 'star', '🔮', 'Magic!'],
+  ['snow', 'flower', '🥶', 'Frost!'],
+  ['snow', 'fruit', '🍧', 'Snow Cone!'],
+  ['snow', 'milk', '🍦', 'Ice Cream!'],
+  // Egg combos
+  ['egg', 'milk', '🧁', 'Cupcake!'],
+  ['egg', 'fire', '🍳', 'Fried Egg!'],
+  ['egg', 'wind', '🐦', 'Bird!'],
+  ['egg', 'star', '🦄', 'Unicorn!'],
+  ['egg', 'flower', '🐛', 'Caterpillar!'],
+  ['egg', 'cloud', '🪺', 'Nest!'],
+  ['egg', 'fruit', '🥞', 'Pancake!'],
+  // Milk & Bread combos
+  ['milk', 'bread', '🍰', 'Cake!'],
+  ['milk', 'fire', '☕', 'Hot Cocoa!'],
+  ['milk', 'fruit', '🥤', 'Smoothie!'],
+  // Bread combos
+  ['bread', 'fire', '🥐', 'Toast!'],
+  // Fire + remaining
+  ['fire', 'flower', '🕯️', 'Candle!'],
+]
+const COMBINE_RECIPES = {}
+_recipes.forEach(([a, b, emoji, label]) => {
+  COMBINE_RECIPES[`${a}+${b}`] = { emoji, label }
+  COMBINE_RECIPES[`${b}+${a}`] = { emoji, label }
+})
 
 function MixAndMatch({ onBack }) {
   const [items, setItems] = useState(COMBINE_ITEMS)
