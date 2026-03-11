@@ -1660,42 +1660,48 @@ _recipes.forEach(([a, b, emoji, label]) => {
 })
 
 function MixAndMatch({ onBack }) {
-  const [items, setItems] = useState(COMBINE_ITEMS)
+  const [selected, setSelected] = useState([])
   const [result, setResult] = useState(null)
+  const [showResult, setShowResult] = useState(false)
   const [discoveries, setDiscoveries] = useState([])
-  const [selected, setSelected] = useState(null)
 
   const totalRecipes = Object.keys(COMBINE_RECIPES).length / 2
 
-  const handleTap = useCallback((item) => {
-    if (!selected) {
-      setSelected(item)
-      playTap()
-    } else if (selected.id === item.id) {
-      setSelected(null)
-      playTap()
-    } else {
-      const key = `${selected.id}+${item.id}`
+  const pickItem = (item) => {
+    if (showResult) return
+    if (selected.length >= 2) return
+    playTap()
+    const next = [...selected, item]
+    setSelected(next)
+    if (next.length === 2) {
+      const key = `${next[0].id}+${next[1].id}`
       const recipe = COMBINE_RECIPES[key]
       if (recipe) {
-        setResult({ from: selected, to: item, ...recipe })
-        playCombine()
+        setResult({ from: next[0], to: next[1], ...recipe })
+        setTimeout(() => {
+          setShowResult(true)
+          playCombine()
+        }, 600)
         setDiscoveries(prev => {
-          const sorted = [selected.id, item.id].sort().join('+')
+          const sorted = [next[0].id, next[1].id].sort().join('+')
           if (prev.includes(sorted)) return prev
           return [...prev, sorted]
         })
       } else {
-        setResult({ from: selected, to: item, emoji: '❓', label: 'Hmm... try something else!' })
-        playWobble()
+        setResult({ from: next[0], to: next[1], emoji: '❓', label: 'Hmm... try something else!' })
+        setTimeout(() => {
+          setShowResult(true)
+          playWobble()
+        }, 600)
       }
-      setSelected(null)
     }
-  }, [selected])
+  }
 
-  const dismissResult = () => {
+  const reset = () => {
     playTap()
+    setSelected([])
     setResult(null)
+    setShowResult(false)
   }
 
   return (
@@ -1705,14 +1711,11 @@ function MixAndMatch({ onBack }) {
         <span style={s.navTitle}>🧩 Mix & Match</span>
       </nav>
 
-      <div
-        style={{
-          flex: 1, display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center',
-          padding: '24px 20px', gap: '20px', overflow: 'auto',
-          position: 'relative',
-        }}
-      >
+      <div style={{
+        flex: 1, display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        padding: '24px 20px', gap: '28px', overflow: 'auto',
+      }}>
         {/* Progress */}
         <div style={{
           fontSize: 'clamp(13px, 3.5vw, 16px)', fontWeight: 700,
@@ -1721,78 +1724,133 @@ function MixAndMatch({ onBack }) {
           {discoveries.length} / {totalRecipes} discovered
         </div>
 
-        {/* Equation display */}
+        {/* Prompt text */}
         <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          gap: '10px', minHeight: '56px',
-          animation: 'fadeSlideIn 0.4s ease-out',
+          fontSize: 'clamp(18px, 4.5vw, 24px)', fontWeight: 800,
+          color: '#5D4E6D', textAlign: 'center',
         }}>
-          {selected ? (
+          {selected.length === 0 ? 'Pick something!' :
+           selected.length === 1 ? 'Pick another!' :
+           showResult ? `You made ${result.label}` : 'Mixing...'}
+        </div>
+
+        {/* Inline equation slots */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '16px',
+          minHeight: '100px', flexWrap: 'wrap', justifyContent: 'center',
+        }}>
+          {/* Slot 1 */}
+          <div style={{
+            width: '80px', height: '80px', borderRadius: '20px',
+            border: selected[0] ? 'none' : '3px dashed #CE93D8',
+            background: selected[0] ? 'rgba(255,255,255,0.75)' : 'rgba(206,147,216,0.1)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: selected[0] ? '44px' : '28px', color: '#CE93D8',
+            animation: selected[0] ? 'popIn 0.3s ease-out' : 'none',
+            boxShadow: selected[0] ? '0 4px 20px rgba(0,0,0,0.06)' : 'none',
+          }}>
+            {selected[0] ? selected[0].emoji : '?'}
+          </div>
+
+          <span style={{ fontSize: '28px', fontWeight: 900, color: '#CE93D8' }}>+</span>
+
+          {/* Slot 2 */}
+          <div style={{
+            width: '80px', height: '80px', borderRadius: '20px',
+            border: selected[1] ? 'none' : '3px dashed #CE93D8',
+            background: selected[1] ? 'rgba(255,255,255,0.75)' : 'rgba(206,147,216,0.1)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: selected[1] ? '44px' : '28px', color: '#CE93D8',
+            animation: selected[1] ? 'popIn 0.3s ease-out' : 'none',
+            boxShadow: selected[1] ? '0 4px 20px rgba(0,0,0,0.06)' : 'none',
+          }}>
+            {selected[1] ? selected[1].emoji : '?'}
+          </div>
+
+          {/* Result slot (appears after two are picked) */}
+          {selected.length === 2 && (
             <>
-              <span style={{ fontSize: 'clamp(32px, 8vw, 44px)', lineHeight: 1 }}>{selected.emoji}</span>
-              <span style={{ fontSize: 'clamp(20px, 5vw, 28px)', fontWeight: 900, color: '#CE93D8' }}>+</span>
-              <span style={{
-                fontSize: 'clamp(32px, 8vw, 44px)', lineHeight: 1,
-                opacity: 0.3,
-              }}>?</span>
-              <span style={{ fontSize: 'clamp(20px, 5vw, 28px)', fontWeight: 900, color: '#CE93D8' }}>=</span>
-              <span style={{
-                fontSize: 'clamp(32px, 8vw, 44px)', lineHeight: 1,
-                opacity: 0.3,
-              }}>?</span>
+              <span style={{ fontSize: '28px', fontWeight: 900, color: '#CE93D8' }}>=</span>
+              <div style={{
+                width: '80px', height: '80px', borderRadius: '20px',
+                background: showResult ? 'rgba(255,255,255,0.75)' : 'rgba(206,147,216,0.1)',
+                border: showResult ? 'none' : '3px dashed #CE93D8',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: showResult ? '44px' : '28px', color: '#CE93D8',
+                animation: showResult ? (result.label.includes('Hmm') ? 'shake 0.4s ease' : 'celebrate 0.5s ease') : 'none',
+                boxShadow: showResult ? '0 4px 20px rgba(0,0,0,0.06)' : 'none',
+              }}>
+                {showResult ? result.emoji : '?'}
+              </div>
             </>
-          ) : (
-            <span style={{
-              fontSize: 'clamp(18px, 4.5vw, 24px)', fontWeight: 800,
-              color: '#5D4E6D', textAlign: 'center',
-            }}>
-              Tap two things to mix!
-            </span>
           )}
         </div>
 
-        {/* Items grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: '12px',
-          width: '100%',
-          maxWidth: '380px',
-        }}>
-          {items.map((item, i) => (
-            <div
-              key={item.id}
-              style={{
-                display: 'flex', flexDirection: 'column', alignItems: 'center',
-                gap: '6px', padding: '14px 8px', borderRadius: '20px',
-                background: selected && selected.id === item.id
-                  ? 'rgba(206,147,216,0.35)'
-                  : 'rgba(255,255,255,0.75)',
-                backdropFilter: 'blur(8px)',
-                boxShadow: selected && selected.id === item.id
-                  ? '0 4px 20px rgba(206,147,216,0.3)'
-                  : '0 4px 20px rgba(0,0,0,0.06)',
-                cursor: 'pointer',
-                animation: `popIn 0.3s ease-out ${i * 0.05}s both`,
-                transition: 'background 0.2s, transform 0.15s, box-shadow 0.2s',
-                transform: selected && selected.id === item.id ? 'scale(1.08)' : 'scale(1)',
-                userSelect: 'none',
-                WebkitUserSelect: 'none',
-              }}
-              onClick={() => handleTap(item)}
-            >
-              <span style={{ fontSize: 'clamp(32px, 8vw, 44px)', lineHeight: 1, pointerEvents: 'none' }}>
-                {item.emoji}
-              </span>
-              <span style={{
-                fontSize: 'clamp(11px, 3vw, 14px)', fontWeight: 700,
-                color: '#5D4E6D', pointerEvents: 'none',
-              }}>
-                {item.label}
-              </span>
+        {/* Items grid - hidden when showing result */}
+        {!showResult && (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, 1fr)',
+            gap: '12px',
+            width: '100%',
+            maxWidth: '380px',
+          }}>
+            {COMBINE_ITEMS.map((item, i) => (
+              <div
+                key={item.id}
+                style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center',
+                  gap: '6px', padding: '14px 8px', borderRadius: '20px',
+                  background: 'rgba(255,255,255,0.75)',
+                  backdropFilter: 'blur(8px)',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
+                  cursor: 'pointer',
+                  animation: `popIn 0.3s ease-out ${i * 0.05}s both`,
+                  userSelect: 'none',
+                  WebkitUserSelect: 'none',
+                }}
+                onClick={() => pickItem(item)}
+              >
+                <span style={{ fontSize: 'clamp(32px, 8vw, 44px)', lineHeight: 1, pointerEvents: 'none' }}>
+                  {item.emoji}
+                </span>
+                <span style={{
+                  fontSize: 'clamp(11px, 3vw, 14px)', fontWeight: 700,
+                  color: '#5D4E6D', pointerEvents: 'none',
+                }}>
+                  {item.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Result display + Mix Again */}
+        {showResult && result && (
+          <div style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px',
+            animation: 'fadeSlideIn 0.4s ease-out',
+          }}>
+            <div style={{
+              fontSize: 'clamp(24px, 7vw, 40px)', fontWeight: 900,
+              color: result.label.includes('Hmm') ? '#9E8DAE' : '#5D4E6D',
+              textShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            }}>
+              {result.label}
             </div>
-          ))}
-        </div>
+            <button
+              style={{
+                padding: '14px 32px', borderRadius: '24px', border: 'none',
+                background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(8px)',
+                fontSize: '16px', fontWeight: 800, color: '#CE93D8', cursor: 'pointer',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
+              }}
+              onClick={reset}
+            >
+              Mix Again
+            </button>
+          </div>
+        )}
 
         {/* Discoveries */}
         {discoveries.length > 0 && (
@@ -1817,65 +1875,6 @@ function MixAndMatch({ onBack }) {
           </div>
         )}
       </div>
-
-      {/* Result overlay */}
-      {result && (
-        <div
-          style={{
-            position: 'fixed', inset: 0,
-            background: 'rgba(0,0,0,0.3)',
-            backdropFilter: 'blur(4px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 2000,
-            animation: 'fadeIn 0.2s ease-out',
-          }}
-          onClick={dismissResult}
-        >
-          <div
-            style={{
-              background: 'rgba(255,255,255,0.95)',
-              borderRadius: '28px',
-              padding: '32px 40px',
-              display: 'flex', flexDirection: 'column',
-              alignItems: 'center', gap: '16px',
-              boxShadow: '0 8px 40px rgba(0,0,0,0.15)',
-              animation: 'popIn 0.4s ease-out',
-              maxWidth: '320px',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '40px' }}>
-              <span>{result.from.emoji}</span>
-              <span style={{ fontSize: '24px', fontWeight: 900, color: '#CE93D8' }}>+</span>
-              <span>{result.to.emoji}</span>
-              <span style={{ fontSize: '24px', fontWeight: 900, color: '#CE93D8' }}>=</span>
-            </div>
-            <div style={{
-              fontSize: '72px', lineHeight: 1,
-              animation: result.label.includes('Hmm') ? 'shake 0.4s ease' : 'celebrate 0.6s ease',
-            }}>
-              {result.emoji}
-            </div>
-            <div style={{
-              fontSize: 'clamp(20px, 5vw, 28px)', fontWeight: 900,
-              color: result.label.includes('Hmm') ? '#9E8DAE' : '#5D4E6D',
-            }}>
-              {result.label}
-            </div>
-            <button
-              style={{
-                padding: '12px 28px', borderRadius: '20px', border: 'none',
-                background: 'rgba(206,147,216,0.15)',
-                fontSize: '16px', fontWeight: 800, color: '#CE93D8', cursor: 'pointer',
-                transition: 'transform 0.2s',
-              }}
-              onClick={dismissResult}
-            >
-              Try More!
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
