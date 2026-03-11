@@ -1456,95 +1456,11 @@ const COMBINE_RECIPES = {
 
 function MixAndMatch({ onBack }) {
   const [items, setItems] = useState(COMBINE_ITEMS)
-  const [dragging, setDragging] = useState(null)
-  const [dragPos, setDragPos] = useState({ x: 0, y: 0 })
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const [result, setResult] = useState(null)
   const [discoveries, setDiscoveries] = useState([])
   const [selected, setSelected] = useState(null)
-  const itemRefs = useRef({})
-  const containerRef = useRef(null)
 
   const totalRecipes = Object.keys(COMBINE_RECIPES).length / 2
-
-  const getPos = (e) => {
-    const t = e.touches ? e.touches[0] : e
-    return { x: t.clientX, y: t.clientY }
-  }
-
-  const handleDragStart = useCallback((e, item) => {
-    e.preventDefault()
-    const pos = getPos(e)
-    const el = itemRefs.current[item.id]
-    if (!el) return
-    const rect = el.getBoundingClientRect()
-    setDragOffset({ x: pos.x - rect.left - rect.width / 2, y: pos.y - rect.top - rect.height / 2 })
-    setDragPos(pos)
-    setDragging(item)
-    setSelected(null)
-    playTap()
-  }, [])
-
-  const handleDragMove = useCallback((e) => {
-    if (!dragging) return
-    e.preventDefault()
-    setDragPos(getPos(e))
-  }, [dragging])
-
-  const handleDragEnd = useCallback(() => {
-    if (!dragging) return
-
-    // Check if dropped on another item
-    let found = null
-    for (const item of items) {
-      if (item.id === dragging.id) continue
-      const el = itemRefs.current[item.id]
-      if (!el) continue
-      const rect = el.getBoundingClientRect()
-      if (
-        dragPos.x >= rect.left && dragPos.x <= rect.right &&
-        dragPos.y >= rect.top && dragPos.y <= rect.bottom
-      ) {
-        found = item
-        break
-      }
-    }
-
-    if (found) {
-      const key = `${dragging.id}+${found.id}`
-      const recipe = COMBINE_RECIPES[key]
-      if (recipe) {
-        setResult({ from: dragging, to: found, ...recipe })
-        playCombine()
-        setDiscoveries(prev => {
-          const sorted = [dragging.id, found.id].sort().join('+')
-          if (prev.includes(sorted)) return prev
-          return [...prev, sorted]
-        })
-      } else {
-        setResult({ from: dragging, to: found, emoji: '❓', label: 'Hmm... try something else!' })
-        playWobble()
-      }
-    }
-
-    setDragging(null)
-  }, [dragging, dragPos, items])
-
-  useEffect(() => {
-    if (!dragging) return
-    const onMove = (e) => handleDragMove(e)
-    const onEnd = () => handleDragEnd()
-    window.addEventListener('mousemove', onMove)
-    window.addEventListener('mouseup', onEnd)
-    window.addEventListener('touchmove', onMove, { passive: false })
-    window.addEventListener('touchend', onEnd)
-    return () => {
-      window.removeEventListener('mousemove', onMove)
-      window.removeEventListener('mouseup', onEnd)
-      window.removeEventListener('touchmove', onMove)
-      window.removeEventListener('touchend', onEnd)
-    }
-  }, [dragging, handleDragMove, handleDragEnd])
 
   const handleTap = useCallback((item) => {
     if (!selected) {
@@ -1585,7 +1501,6 @@ function MixAndMatch({ onBack }) {
       </nav>
 
       <div
-        ref={containerRef}
         style={{
           flex: 1, display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center',
@@ -1642,15 +1557,12 @@ function MixAndMatch({ onBack }) {
           {items.map((item, i) => (
             <div
               key={item.id}
-              ref={(el) => { itemRefs.current[item.id] = el }}
               style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
                 gap: '6px', padding: '14px 8px', borderRadius: '20px',
                 background: selected && selected.id === item.id
                   ? 'rgba(206,147,216,0.35)'
-                  : dragging && dragging.id !== item.id
-                    ? 'rgba(206,147,216,0.15)'
-                    : 'rgba(255,255,255,0.75)',
+                  : 'rgba(255,255,255,0.75)',
                 backdropFilter: 'blur(8px)',
                 boxShadow: selected && selected.id === item.id
                   ? '0 4px 20px rgba(206,147,216,0.3)'
@@ -1658,15 +1570,11 @@ function MixAndMatch({ onBack }) {
                 cursor: 'pointer',
                 animation: `popIn 0.3s ease-out ${i * 0.05}s both`,
                 transition: 'background 0.2s, transform 0.15s, box-shadow 0.2s',
-                opacity: dragging && dragging.id === item.id ? 0.4 : 1,
                 transform: selected && selected.id === item.id ? 'scale(1.08)' : 'scale(1)',
                 userSelect: 'none',
                 WebkitUserSelect: 'none',
-                touchAction: 'none',
               }}
               onClick={() => handleTap(item)}
-              onMouseDown={(e) => handleDragStart(e, item)}
-              onTouchStart={(e) => handleDragStart(e, item)}
             >
               <span style={{ fontSize: 'clamp(32px, 8vw, 44px)', lineHeight: 1, pointerEvents: 'none' }}>
                 {item.emoji}
@@ -1704,24 +1612,6 @@ function MixAndMatch({ onBack }) {
           </div>
         )}
       </div>
-
-      {/* Dragging ghost */}
-      {dragging && (
-        <div style={{
-          position: 'fixed',
-          left: dragPos.x - 36,
-          top: dragPos.y - 36,
-          width: '72px', height: '72px',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '48px',
-          pointerEvents: 'none',
-          zIndex: 1000,
-          filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.2))',
-          transition: 'none',
-        }}>
-          {dragging.emoji}
-        </div>
-      )}
 
       {/* Result overlay */}
       {result && (
