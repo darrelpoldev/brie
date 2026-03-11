@@ -165,8 +165,8 @@ const LETTER_DATA = {
 }
 
 // ─── Counting Garden Data ──────────────────────────────────────────────────
-const GARDEN_ITEMS = ['🌷', '🌻', '🌸', '🦋', '🌺', '🍄', '🐛', '🐝', '🌼', '🐞']
-const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']
+const GARDEN_ITEMS = ['🌷', '🌻', '🌸', '🦋', '🌺', '🍄', '🐛', '🐝', '🌼', '🐞', '🌹', '🐌', '🪻', '🌿', '🐦', '🪲', '🍀', '🌾', '🐜', '🪷']
+const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty']
 
 // ─── Story Time Data ───────────────────────────────────────────────────────
 const STORY_CHARACTERS = [
@@ -174,24 +174,56 @@ const STORY_CHARACTERS = [
   { name: 'Bunny', emoji: '🐰' },
   { name: 'Cat', emoji: '🐱' },
   { name: 'Frog', emoji: '🐸' },
+  { name: 'Owl', emoji: '🦉' },
+  { name: 'Fox', emoji: '🦊' },
+  { name: 'Puppy', emoji: '🐶' },
+  { name: 'Penguin', emoji: '🐧' },
+  { name: 'Monkey', emoji: '🐵' },
+  { name: 'Turtle', emoji: '🐢' },
+  { name: 'Duck', emoji: '🦆' },
+  { name: 'Mouse', emoji: '🐭' },
 ]
 const STORY_PLACES = [
   { name: 'a magical forest', emoji: '🌲' },
   { name: 'a sunny beach', emoji: '🏖️' },
   { name: 'a tall mountain', emoji: '⛰️' },
   { name: 'a secret garden', emoji: '🌻' },
+  { name: 'a rainbow bridge', emoji: '🌈' },
+  { name: 'a cozy castle', emoji: '🏰' },
+  { name: 'a deep ocean', emoji: '🌊' },
+  { name: 'a snowy village', emoji: '🏔️' },
+  { name: 'a candy land', emoji: '🍭' },
+  { name: 'a starry sky', emoji: '🌌' },
+  { name: 'a mushroom town', emoji: '🍄' },
+  { name: 'a flowery meadow', emoji: '🌼' },
 ]
 const STORY_ACTIONS = [
   { name: 'found a treasure chest', emoji: '🎁' },
   { name: 'made a new friend', emoji: '💕' },
   { name: 'discovered a magic flower', emoji: '🌺' },
   { name: 'caught a falling star', emoji: '⭐' },
+  { name: 'built a little house', emoji: '🏠' },
+  { name: 'found a golden key', emoji: '🔑' },
+  { name: 'saw a beautiful butterfly', emoji: '🦋' },
+  { name: 'planted a magic seed', emoji: '🌱' },
+  { name: 'heard a lovely song', emoji: '🎵' },
+  { name: 'baked a yummy cake', emoji: '🎂' },
+  { name: 'painted a pretty picture', emoji: '🎨' },
+  { name: 'flew on a magic carpet', emoji: '🪄' },
 ]
 const STORY_ENDINGS = [
   { text: 'And they lived happily ever after!', emoji: '🌈' },
   { text: 'And they danced with joy!', emoji: '💃' },
   { text: 'And everyone celebrated together!', emoji: '🎉' },
   { text: 'And the whole world smiled!', emoji: '😊' },
+  { text: 'And they fell asleep under the stars!', emoji: '🌟' },
+  { text: 'And they made a wish come true!', emoji: '✨' },
+  { text: 'And they hugged their best friend!', emoji: '🤗' },
+  { text: 'And they sang the happiest song!', emoji: '🎶' },
+  { text: 'And fireworks lit up the sky!', emoji: '🎆' },
+  { text: 'And a rainbow appeared just for them!', emoji: '🌈' },
+  { text: 'And they shared cookies with everyone!', emoji: '🍪' },
+  { text: 'And the adventure was just beginning!', emoji: '🚀' },
 ]
 
 // ─── Color Discovery Data ──────────────────────────────────────────────────
@@ -200,17 +232,47 @@ const BASE_COLORS_LIST = [
   { name: 'Blue', color: '#42A5F5' },
   { name: 'Yellow', color: '#FFEE58' },
   { name: 'White', color: '#FAFAFA' },
+  { name: 'Green', color: '#66BB6A' },
+  { name: 'Orange', color: '#FFA726' },
+  { name: 'Purple', color: '#AB47BC' },
+  { name: 'Black', color: '#424242' },
 ]
 
 function getColorMix(c1, c2) {
   const key = [c1, c2].sort().join('+')
   const mixes = {
+    // Primary mixes
     'Blue+Red': { name: 'Purple', color: '#AB47BC' },
     'Red+Yellow': { name: 'Orange', color: '#FFA726' },
     'Blue+Yellow': { name: 'Green', color: '#66BB6A' },
+    // White mixes
     'Red+White': { name: 'Pink', color: '#F48FB1' },
     'Blue+White': { name: 'Light Blue', color: '#81D4FA' },
     'White+Yellow': { name: 'Cream', color: '#FFF8E1' },
+    'Green+White': { name: 'Mint', color: '#A5D6A7' },
+    'Orange+White': { name: 'Peach', color: '#FFCCBC' },
+    'Purple+White': { name: 'Lavender', color: '#CE93D8' },
+    // Black mixes
+    'Black+Red': { name: 'Maroon', color: '#8B0000' },
+    'Black+Blue': { name: 'Navy', color: '#1A237E' },
+    'Black+Yellow': { name: 'Olive', color: '#827717' },
+    'Black+Green': { name: 'Forest', color: '#2E7D32' },
+    'Black+Orange': { name: 'Brown', color: '#795548' },
+    'Black+Purple': { name: 'Plum', color: '#4A148C' },
+    'Black+White': { name: 'Gray', color: '#9E9E9E' },
+    // Secondary mixes
+    'Green+Red': { name: 'Brown', color: '#795548' },
+    'Blue+Orange': { name: 'Teal', color: '#009688' },
+    'Purple+Yellow': { name: 'Brown', color: '#8D6E63' },
+    'Green+Yellow': { name: 'Lime', color: '#CDDC39' },
+    'Blue+Green': { name: 'Turquoise', color: '#26C6DA' },
+    'Orange+Red': { name: 'Scarlet', color: '#E53935' },
+    'Blue+Purple': { name: 'Indigo', color: '#5C6BC0' },
+    'Green+Orange': { name: 'Amber', color: '#FFB300' },
+    'Purple+Red': { name: 'Magenta', color: '#E91E63' },
+    'Orange+Yellow': { name: 'Gold', color: '#FFD600' },
+    'Orange+Purple': { name: 'Rust', color: '#BF360C' },
+    'Green+Purple': { name: 'Slate', color: '#607D8B' },
   }
   return mixes[key] || null
 }
@@ -952,7 +1014,7 @@ function CountingGarden({ onBack }) {
   const gardenRef = useRef(null)
 
   const plantItem = () => {
-    if (items.length >= 10) return
+    if (items.length >= 20) return
     playPlant()
     const gardenEl = gardenRef.current
     const rect = gardenEl ? gardenEl.getBoundingClientRect() : { width: 300, height: 400 }
@@ -960,7 +1022,7 @@ function CountingGarden({ onBack }) {
     const x = 20 + Math.random() * (rect.width - 80)
     const y = 20 + Math.random() * (rect.height - 80)
     setItems(prev => [...prev, { id: prev.length, emoji, x, y }])
-    if (items.length + 1 === 5 || items.length + 1 === 10) {
+    if (items.length + 1 === 5 || items.length + 1 === 10 || items.length + 1 === 15 || items.length + 1 === 20) {
       setTimeout(playHappyChime, 300)
     }
   }
@@ -1004,7 +1066,7 @@ function CountingGarden({ onBack }) {
         style={{
           flex: 1, position: 'relative', overflow: 'hidden',
           background: 'linear-gradient(180deg, #E8F5E9 0%, #C8E6C9 60%, #A5D6A7 100%)',
-          cursor: count < 10 ? 'pointer' : 'default',
+          cursor: count < 20 ? 'pointer' : 'default',
           touchAction: 'manipulation',
         }}
         onClick={plantItem}
@@ -1024,7 +1086,7 @@ function CountingGarden({ onBack }) {
           </div>
         ))}
 
-        {count < 10 && (
+        {count < 20 && (
           <div style={{
             position: 'absolute', bottom: '50%', left: '50%',
             transform: 'translate(-50%, 50%)',
@@ -1033,11 +1095,11 @@ function CountingGarden({ onBack }) {
             textAlign: 'center', pointerEvents: 'none',
             animation: 'float 3s ease-in-out infinite',
           }}>
-            {count === 0 ? 'Tap to plant!' : `Tap for more! (${10 - count} left)`}
+            {count === 0 ? 'Tap to plant!' : `Tap for more! (${20 - count} left)`}
           </div>
         )}
 
-        {count === 10 && (
+        {count === 20 && (
           <div style={{
             position: 'absolute', top: '50%', left: '50%',
             transform: 'translate(-50%, -50%)',
@@ -1431,6 +1493,12 @@ const COMBINE_ITEMS = [
   { id: 'flower', emoji: '🌸', label: 'Flower' },
   { id: 'cloud', emoji: '☁️', label: 'Cloud' },
   { id: 'fruit', emoji: '🍎', label: 'Fruit' },
+  { id: 'rock', emoji: '🪨', label: 'Rock' },
+  { id: 'wood', emoji: '🪵', label: 'Wood' },
+  { id: 'honey', emoji: '🍯', label: 'Honey' },
+  { id: 'moon', emoji: '🌙', label: 'Moon' },
+  { id: 'fish', emoji: '🐟', label: 'Fish' },
+  { id: 'candy', emoji: '🍬', label: 'Candy' },
 ]
 
 // Helper to build bidirectional recipes from a compact list
@@ -1447,8 +1515,14 @@ const _recipes = [
   ['sun', 'star', '🌟', 'Superstar!'],
   ['sun', 'fruit', '🍊', 'Orange!'],
   ['sun', 'wind', '🪁', 'Kite!'],
+  ['sun', 'rock', '🔥', 'Hot Rock!'],
+  ['sun', 'wood', '🪑', 'Chair!'],
+  ['sun', 'honey', '🧸', 'Teddy Bear!'],
+  ['sun', 'moon', '🌗', 'Eclipse!'],
+  ['sun', 'fish', '🐠', 'Tropical Fish!'],
+  ['sun', 'candy', '🍭', 'Lollipop!'],
   // Water combos
-  ['water', 'dirt', '🪨', 'Mud!'],
+  ['water', 'dirt', '🫧', 'Mud!'],
   ['water', 'seed', '🌿', 'Plant!'],
   ['water', 'snow', '🧊', 'Ice!'],
   ['water', 'cloud', '🌧️', 'Rain!'],
@@ -1457,6 +1531,12 @@ const _recipes = [
   ['water', 'fruit', '🧃', 'Juice!'],
   ['water', 'star', '✨', 'Sparkle!'],
   ['water', 'wind', '🌊', 'Wave!'],
+  ['water', 'rock', '⛲', 'Fountain!'],
+  ['water', 'wood', '🚣', 'Boat!'],
+  ['water', 'honey', '🍵', 'Tea!'],
+  ['water', 'moon', '🌊', 'Tide!'],
+  ['water', 'fish', '🐙', 'Octopus!'],
+  ['water', 'candy', '🧊', 'Popsicle!'],
   // Dirt combos
   ['dirt', 'seed', '🌻', 'Flower!'],
   ['dirt', 'snow', '⛄', 'Snowman!'],
@@ -1465,6 +1545,10 @@ const _recipes = [
   ['dirt', 'star', '💎', 'Diamond!'],
   ['dirt', 'cloud', '🌫️', 'Fog!'],
   ['dirt', 'fruit', '🥕', 'Carrot!'],
+  ['dirt', 'rock', '⛰️', 'Mountain!'],
+  ['dirt', 'wood', '🏠', 'House!'],
+  ['dirt', 'moon', '🌑', 'Crater!'],
+  ['dirt', 'fish', '🦴', 'Fossil!'],
   // Seed combos
   ['seed', 'snow', '🎄', 'Pine Tree!'],
   ['seed', 'fire', '🍿', 'Popcorn!'],
@@ -1472,12 +1556,22 @@ const _recipes = [
   ['seed', 'flower', '💐', 'Bouquet!'],
   ['seed', 'cloud', '🍄', 'Mushroom!'],
   ['seed', 'fruit', '🍇', 'Grapes!'],
+  ['seed', 'rock', '🗿', 'Statue!'],
+  ['seed', 'wood', '🌲', 'Forest!'],
+  ['seed', 'honey', '🌺', 'Hibiscus!'],
+  ['seed', 'moon', '🌻', 'Sunflower!'],
   // Snow combos
   ['snow', 'wind', '🌨️', 'Blizzard!'],
   ['snow', 'star', '🔮', 'Magic!'],
   ['snow', 'flower', '🥶', 'Frost!'],
   ['snow', 'fruit', '🍧', 'Snow Cone!'],
   ['snow', 'milk', '🍦', 'Ice Cream!'],
+  ['snow', 'rock', '🏔️', 'Glacier!'],
+  ['snow', 'wood', '🛷', 'Sled!'],
+  ['snow', 'moon', '🌌', 'Aurora!'],
+  ['snow', 'candy', '🎅', 'Santa!'],
+  ['snow', 'cloud', '☃️', 'Snow Globe!'],
+  ['snow', 'fish', '🐧', 'Penguin!'],
   // Egg combos
   ['egg', 'milk', '🧁', 'Cupcake!'],
   ['egg', 'fire', '🍳', 'Fried Egg!'],
@@ -1486,14 +1580,78 @@ const _recipes = [
   ['egg', 'flower', '🐛', 'Caterpillar!'],
   ['egg', 'cloud', '🪺', 'Nest!'],
   ['egg', 'fruit', '🥞', 'Pancake!'],
-  // Milk & Bread combos
+  ['egg', 'rock', '🐢', 'Turtle!'],
+  ['egg', 'wood', '🦉', 'Owl!'],
+  ['egg', 'honey', '🍪', 'Cookie!'],
+  ['egg', 'candy', '🎂', 'Birthday Cake!'],
+  // Milk combos
   ['milk', 'bread', '🍰', 'Cake!'],
   ['milk', 'fire', '☕', 'Hot Cocoa!'],
   ['milk', 'fruit', '🥤', 'Smoothie!'],
+  ['milk', 'honey', '🧇', 'Waffle!'],
+  ['milk', 'candy', '🍫', 'Chocolate!'],
+  ['milk', 'star', '🌠', 'Milky Way!'],
+  ['milk', 'cloud', '🧈', 'Butter!'],
   // Bread combos
   ['bread', 'fire', '🥐', 'Toast!'],
-  // Fire + remaining
+  ['bread', 'fruit', '🥧', 'Pie!'],
+  ['bread', 'honey', '🥯', 'Bagel!'],
+  ['bread', 'candy', '🍩', 'Donut!'],
+  ['bread', 'fish', '🍣', 'Sushi!'],
+  // Fire combos
   ['fire', 'flower', '🕯️', 'Candle!'],
+  ['fire', 'rock', '⚡', 'Lightning!'],
+  ['fire', 'wood', '🏕️', 'Campfire!'],
+  ['fire', 'star', '☄️', 'Comet!'],
+  ['fire', 'candy', '🎇', 'Sparkler!'],
+  ['fire', 'moon', '🚀', 'Rocket!'],
+  ['fire', 'wind', '🎆', 'Firework!'],
+  // Wind combos
+  ['wind', 'rock', '🏜️', 'Sand Dune!'],
+  ['wind', 'wood', '🎐', 'Wind Chime!'],
+  ['wind', 'flower', '🌾', 'Wheat!'],
+  ['wind', 'moon', '🦇', 'Bat!'],
+  ['wind', 'cloud', '⛈️', 'Storm!'],
+  ['wind', 'candy', '🎈', 'Balloon!'],
+  // Star combos
+  ['star', 'rock', '💫', 'Meteor!'],
+  ['star', 'wood', '🎄', 'Christmas Tree!'],
+  ['star', 'flower', '🪷', 'Lotus!'],
+  ['star', 'moon', '🌃', 'Night Sky!'],
+  ['star', 'candy', '🎪', 'Circus!'],
+  ['star', 'cloud', '🛸', 'UFO!'],
+  // Rock combos
+  ['rock', 'wood', '⚒️', 'Tools!'],
+  ['rock', 'flower', '🏺', 'Vase!'],
+  ['rock', 'moon', '🌋', 'Moon Rock!'],
+  ['rock', 'fish', '🐚', 'Shell!'],
+  ['rock', 'candy', '💍', 'Ring!'],
+  // Wood combos
+  ['wood', 'flower', '🖼️', 'Picture Frame!'],
+  ['wood', 'moon', '🪵', 'Log Cabin!'],
+  ['wood', 'fish', '🎣', 'Fishing Rod!'],
+  ['wood', 'honey', '🐝', 'Beehive!'],
+  ['wood', 'candy', '🎭', 'Puppet!'],
+  // Honey combos
+  ['honey', 'flower', '🐻', 'Bear!'],
+  ['honey', 'fruit', '🍰', 'Tart!'],
+  ['honey', 'moon', '🌛', 'Honeymoon!'],
+  ['honey', 'fish', '🍱', 'Bento!'],
+  // Moon combos
+  ['moon', 'cloud', '🌙', 'Crescent!'],
+  ['moon', 'flower', '🌷', 'Tulip!'],
+  ['moon', 'candy', '🧙', 'Wizard!'],
+  ['moon', 'fish', '🐳', 'Whale!'],
+  // Fish combos
+  ['fish', 'flower', '🐸', 'Frog!'],
+  ['fish', 'candy', '🐡', 'Pufferfish!'],
+  ['fish', 'cloud', '🐬', 'Dolphin!'],
+  ['fish', 'fruit', '🦀', 'Crab!'],
+  ['fish', 'star', '🐚', 'Starfish!'],
+  // Candy combos
+  ['candy', 'flower', '🌹', 'Rose!'],
+  ['candy', 'fruit', '🍓', 'Strawberry!'],
+  ['candy', 'cloud', '🦄', 'Unicorn!'],
 ]
 const COMBINE_RECIPES = {}
 _recipes.forEach(([a, b, emoji, label]) => {
