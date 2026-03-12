@@ -159,7 +159,7 @@ const LETTER_DATA = {
   U: [{ word: 'Umbrella', emoji: '☂️' }, { word: 'Unicorn', emoji: '🦄' }, { word: 'Ukulele', emoji: '🎸' }],
   V: [{ word: 'Violin', emoji: '🎻' }, { word: 'Volcano', emoji: '🌋' }, { word: 'Van', emoji: '🚐' }],
   W: [{ word: 'Whale', emoji: '🐋' }, { word: 'Watermelon', emoji: '🍉' }, { word: 'Worm', emoji: '🪱' }, { word: 'Wolf', emoji: '🐺' }],
-  X: [{ word: 'X-ray', emoji: '🩻' }, { word: 'Xylophone', emoji: '🎶' }, { word: 'Fox', emoji: '🦊' }],
+  X: [{ word: 'X-ray', emoji: '🩻' }, { word: 'Xylophone', emoji: '🎶' }],
   Y: [{ word: 'Yarn', emoji: '🧶' }, { word: 'Yak', emoji: '🐂' }, { word: 'Yogurt', emoji: '🥛' }],
   Z: [{ word: 'Zebra', emoji: '🦓' }, { word: 'Zoo', emoji: '🦁' }, { word: 'Zucchini', emoji: '🥒' }],
 }
