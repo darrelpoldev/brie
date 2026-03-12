@@ -1140,6 +1140,13 @@ function StoryTime({ onBack }) {
   const [place, setPlace] = useState(null)
   const [action, setAction] = useState(null)
   const [ending, setEnding] = useState(null)
+  const [charGrid, setCharGrid] = useState(() => shuffleArray(STORY_CHARACTERS).slice(0, 9))
+  const [placeGrid, setPlaceGrid] = useState(() => shuffleArray(STORY_PLACES).slice(0, 9))
+  const [actionGrid, setActionGrid] = useState(() => shuffleArray(STORY_ACTIONS).slice(0, 9))
+
+  const shuffleCharGrid = () => { playTap(); setCharGrid(shuffleArray(STORY_CHARACTERS).slice(0, 9)) }
+  const shufflePlaceGrid = () => { playTap(); setPlaceGrid(shuffleArray(STORY_PLACES).slice(0, 9)) }
+  const shuffleActionGrid = () => { playTap(); setActionGrid(shuffleArray(STORY_ACTIONS).slice(0, 9)) }
 
   const pickCharacter = (c) => {
     playTap()
@@ -1168,6 +1175,9 @@ function StoryTime({ onBack }) {
     setPlace(null)
     setAction(null)
     setEnding(null)
+    setCharGrid(shuffleArray(STORY_CHARACTERS).slice(0, 9))
+    setPlaceGrid(shuffleArray(STORY_PLACES).slice(0, 9))
+    setActionGrid(shuffleArray(STORY_ACTIONS).slice(0, 9))
   }
 
   const stepTitles = [
@@ -1178,13 +1188,21 @@ function StoryTime({ onBack }) {
   ]
 
   const storyChoiceStyle = (i) => ({
-    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
-    padding: '20px 28px', borderRadius: '24px', border: 'none',
+    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px',
+    padding: '12px 8px', borderRadius: '20px', border: 'none',
     background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(8px)',
     boxShadow: '0 4px 20px rgba(0,0,0,0.06)', cursor: 'pointer',
-    animation: `popIn 0.3s ease-out ${i * 0.1}s both`,
+    animation: `popIn 0.3s ease-out ${i * 0.05}s both`,
     transition: 'transform 0.2s',
   })
+
+  const storyShuffleStyle = {
+    padding: '12px 28px', borderRadius: '20px', border: 'none',
+    background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(8px)',
+    fontSize: '16px', fontWeight: 800, color: '#CE93D8', cursor: 'pointer',
+    boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
+    animation: 'fadeSlideIn 0.4s ease-out',
+  }
 
   return (
     <div style={s.app}>
@@ -1207,36 +1225,51 @@ function StoryTime({ onBack }) {
         </div>
 
         {step === 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'center' }}>
-            {STORY_CHARACTERS.map((c, i) => (
-              <button key={c.name} style={storyChoiceStyle(i)} onClick={() => pickCharacter(c)}>
-                <span style={{ fontSize: '48px' }}>{c.emoji}</span>
-                <span style={{ fontSize: '16px', fontWeight: 700, color: '#5D4E6D' }}>{c.name}</span>
-              </button>
-            ))}
-          </div>
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', width: '100%', maxWidth: '400px' }}>
+              {charGrid.map((c, i) => (
+                <button key={c.name} style={storyChoiceStyle(i)} onClick={() => pickCharacter(c)}>
+                  <span style={{ fontSize: '36px' }}>{c.emoji}</span>
+                  <span style={{ fontSize: '14px', fontWeight: 700, color: '#5D4E6D' }}>{c.name}</span>
+                </button>
+              ))}
+            </div>
+            <button onClick={shuffleCharGrid} style={storyShuffleStyle}>
+              Shuffle
+            </button>
+          </>
         )}
 
         {step === 1 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'center' }}>
-            {STORY_PLACES.map((p, i) => (
-              <button key={p.name} style={storyChoiceStyle(i)} onClick={() => pickPlace(p)}>
-                <span style={{ fontSize: '48px' }}>{p.emoji}</span>
-                <span style={{ fontSize: '14px', fontWeight: 700, color: '#5D4E6D', textTransform: 'capitalize' }}>{p.name}</span>
-              </button>
-            ))}
-          </div>
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', width: '100%', maxWidth: '400px' }}>
+              {placeGrid.map((p, i) => (
+                <button key={p.name} style={storyChoiceStyle(i)} onClick={() => pickPlace(p)}>
+                  <span style={{ fontSize: '36px' }}>{p.emoji}</span>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#5D4E6D', textTransform: 'capitalize' }}>{p.name}</span>
+                </button>
+              ))}
+            </div>
+            <button onClick={shufflePlaceGrid} style={storyShuffleStyle}>
+              Shuffle
+            </button>
+          </>
         )}
 
         {step === 2 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'center' }}>
-            {STORY_ACTIONS.map((a, i) => (
-              <button key={a.name} style={storyChoiceStyle(i)} onClick={() => pickAction(a)}>
-                <span style={{ fontSize: '48px' }}>{a.emoji}</span>
-                <span style={{ fontSize: '14px', fontWeight: 700, color: '#5D4E6D' }}>{a.name}</span>
-              </button>
-            ))}
-          </div>
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', width: '100%', maxWidth: '400px' }}>
+              {actionGrid.map((a, i) => (
+                <button key={a.name} style={storyChoiceStyle(i)} onClick={() => pickAction(a)}>
+                  <span style={{ fontSize: '36px' }}>{a.emoji}</span>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#5D4E6D' }}>{a.name}</span>
+                </button>
+              ))}
+            </div>
+            <button onClick={shuffleActionGrid} style={storyShuffleStyle}>
+              Shuffle
+            </button>
+          </>
         )}
 
         {step === 3 && character && place && action && ending && (
