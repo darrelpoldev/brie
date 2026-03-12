@@ -1659,13 +1659,28 @@ _recipes.forEach(([a, b, emoji, label]) => {
   COMBINE_RECIPES[`${b}+${a}`] = { emoji, label }
 })
 
+function shuffleArray(arr) {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
 function MixAndMatch({ onBack }) {
   const [selected, setSelected] = useState([])
   const [result, setResult] = useState(null)
   const [showResult, setShowResult] = useState(false)
   const [discoveries, setDiscoveries] = useState([])
+  const [gridItems, setGridItems] = useState(() => shuffleArray(COMBINE_ITEMS).slice(0, 9))
 
   const totalRecipes = Object.keys(COMBINE_RECIPES).length / 2
+
+  const shuffleGrid = () => {
+    playTap()
+    setGridItems(shuffleArray(COMBINE_ITEMS).slice(0, 9))
+  }
 
   const pickItem = (item) => {
     if (showResult) return
@@ -1788,40 +1803,52 @@ function MixAndMatch({ onBack }) {
 
         {/* Items grid - hidden when showing result */}
         {!showResult && (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
-            gap: '12px',
-            width: '100%',
-            maxWidth: '380px',
-          }}>
-            {COMBINE_ITEMS.map((item, i) => (
-              <div
-                key={item.id}
-                style={{
-                  display: 'flex', flexDirection: 'column', alignItems: 'center',
-                  gap: '6px', padding: '14px 8px', borderRadius: '20px',
-                  background: 'rgba(255,255,255,0.75)',
-                  backdropFilter: 'blur(8px)',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
-                  cursor: 'pointer',
-                  animation: `popIn 0.3s ease-out ${i * 0.05}s both`,
-                  userSelect: 'none',
-                  WebkitUserSelect: 'none',
-                }}
-                onClick={() => pickItem(item)}
-              >
-                <span style={{ fontSize: 'clamp(32px, 8vw, 44px)', lineHeight: 1, pointerEvents: 'none' }}>
-                  {item.emoji}
-                </span>
-                <span style={{
-                  fontSize: 'clamp(11px, 3vw, 14px)', fontWeight: 700,
-                  color: '#5D4E6D', pointerEvents: 'none',
-                }}>
-                  {item.label}
-                </span>
-              </div>
-            ))}
+          <div style={{ width: '100%', maxWidth: '340px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: '10px',
+              width: '100%',
+            }}>
+              {gridItems.map((item, i) => (
+                <div
+                  key={item.id}
+                  style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center',
+                    gap: '6px', padding: '14px 8px', borderRadius: '20px',
+                    background: 'rgba(255,255,255,0.75)',
+                    backdropFilter: 'blur(8px)',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
+                    cursor: 'pointer',
+                    animation: `popIn 0.3s ease-out ${i * 0.05}s both`,
+                    userSelect: 'none',
+                    WebkitUserSelect: 'none',
+                  }}
+                  onClick={() => pickItem(item)}
+                >
+                  <span style={{ fontSize: 'clamp(32px, 8vw, 44px)', lineHeight: 1, pointerEvents: 'none' }}>
+                    {item.emoji}
+                  </span>
+                  <span style={{
+                    fontSize: 'clamp(11px, 3vw, 14px)', fontWeight: 700,
+                    color: '#5D4E6D', pointerEvents: 'none',
+                  }}>
+                    {item.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <button
+              style={{
+                padding: '10px 24px', borderRadius: '20px', border: 'none',
+                background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(8px)',
+                fontSize: 'clamp(14px, 3.5vw, 16px)', fontWeight: 800, color: '#CE93D8',
+                cursor: 'pointer', boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
+              }}
+              onClick={shuffleGrid}
+            >
+              🔀 Shuffle
+            </button>
           </div>
         )}
 
