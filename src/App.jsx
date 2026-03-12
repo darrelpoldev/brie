@@ -136,32 +136,37 @@ const SHAPE_EMOJIS = {
 // ─── Letter Land Data ──────────────────────────────────────────────────────
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
 const LETTER_DATA = {
-  A: { word: 'Apple', emoji: '🍎' },
-  B: { word: 'Bear', emoji: '🐻' },
-  C: { word: 'Cat', emoji: '🐱' },
-  D: { word: 'Dog', emoji: '🐶' },
-  E: { word: 'Elephant', emoji: '🐘' },
-  F: { word: 'Fish', emoji: '🐟' },
-  G: { word: 'Grape', emoji: '🍇' },
-  H: { word: 'Hat', emoji: '🎩' },
-  I: { word: 'Ice cream', emoji: '🍦' },
-  J: { word: 'Jellyfish', emoji: '🪼' },
-  K: { word: 'Kite', emoji: '🪁' },
-  L: { word: 'Lion', emoji: '🦁' },
-  M: { word: 'Moon', emoji: '🌙' },
-  N: { word: 'Nest', emoji: '🪺' },
-  O: { word: 'Octopus', emoji: '🐙' },
-  P: { word: 'Penguin', emoji: '🐧' },
-  Q: { word: 'Queen', emoji: '👸' },
-  R: { word: 'Rainbow', emoji: '🌈' },
-  S: { word: 'Sun', emoji: '☀️' },
-  T: { word: 'Tree', emoji: '🌳' },
-  U: { word: 'Umbrella', emoji: '☂️' },
-  V: { word: 'Violin', emoji: '🎻' },
-  W: { word: 'Whale', emoji: '🐋' },
-  X: { word: 'Xylophone', emoji: '🎵' },
-  Y: { word: 'Yarn', emoji: '🧶' },
-  Z: { word: 'Zebra', emoji: '🦓' },
+  A: [{ word: 'Apple', emoji: '🍎' }, { word: 'Ant', emoji: '🐜' }, { word: 'Airplane', emoji: '✈️' }, { word: 'Avocado', emoji: '🥑' }],
+  B: [{ word: 'Bear', emoji: '🐻' }, { word: 'Ball', emoji: '⚽' }, { word: 'Balloon', emoji: '🎈' }, { word: 'Butterfly', emoji: '🦋' }],
+  C: [{ word: 'Cat', emoji: '🐱' }, { word: 'Cookie', emoji: '🍪' }, { word: 'Car', emoji: '🚗' }, { word: 'Cow', emoji: '🐮' }],
+  D: [{ word: 'Dog', emoji: '🐶' }, { word: 'Duck', emoji: '🦆' }, { word: 'Drum', emoji: '🥁' }, { word: 'Dolphin', emoji: '🐬' }],
+  E: [{ word: 'Elephant', emoji: '🐘' }, { word: 'Egg', emoji: '🥚' }, { word: 'Eagle', emoji: '🦅' }],
+  F: [{ word: 'Fish', emoji: '🐟' }, { word: 'Flower', emoji: '🌸' }, { word: 'Frog', emoji: '🐸' }, { word: 'Fox', emoji: '🦊' }],
+  G: [{ word: 'Grape', emoji: '🍇' }, { word: 'Giraffe', emoji: '🦒' }, { word: 'Guitar', emoji: '🎸' }],
+  H: [{ word: 'Hat', emoji: '🎩' }, { word: 'Horse', emoji: '🐴' }, { word: 'Heart', emoji: '❤️' }, { word: 'House', emoji: '🏠' }],
+  I: [{ word: 'Ice cream', emoji: '🍦' }, { word: 'Igloo', emoji: '🏠' }, { word: 'Island', emoji: '🏝️' }],
+  J: [{ word: 'Jellyfish', emoji: '🪼' }, { word: 'Juice', emoji: '🧃' }, { word: 'Jet', emoji: '🛩️' }],
+  K: [{ word: 'Kite', emoji: '🪁' }, { word: 'Koala', emoji: '🐨' }, { word: 'King', emoji: '🤴' }, { word: 'Kangaroo', emoji: '🦘' }],
+  L: [{ word: 'Lion', emoji: '🦁' }, { word: 'Ladybug', emoji: '🐞' }, { word: 'Leaf', emoji: '🍃' }, { word: 'Lemon', emoji: '🍋' }],
+  M: [{ word: 'Moon', emoji: '🌙' }, { word: 'Monkey', emoji: '🐵' }, { word: 'Mouse', emoji: '🐭' }, { word: 'Mushroom', emoji: '🍄' }],
+  N: [{ word: 'Nest', emoji: '🪺' }, { word: 'Nut', emoji: '🥜' }, { word: 'Narwhal', emoji: '🐳' }],
+  O: [{ word: 'Octopus', emoji: '🐙' }, { word: 'Orange', emoji: '🍊' }, { word: 'Owl', emoji: '🦉' }],
+  P: [{ word: 'Penguin', emoji: '🐧' }, { word: 'Pizza', emoji: '🍕' }, { word: 'Pig', emoji: '🐷' }, { word: 'Panda', emoji: '🐼' }],
+  Q: [{ word: 'Queen', emoji: '👸' }, { word: 'Quail', emoji: '🐦' }, { word: 'Quilt', emoji: '🛏️' }],
+  R: [{ word: 'Rainbow', emoji: '🌈' }, { word: 'Rabbit', emoji: '🐰' }, { word: 'Rocket', emoji: '🚀' }, { word: 'Robot', emoji: '🤖' }],
+  S: [{ word: 'Sun', emoji: '☀️' }, { word: 'Star', emoji: '⭐' }, { word: 'Snake', emoji: '🐍' }, { word: 'Strawberry', emoji: '🍓' }],
+  T: [{ word: 'Tree', emoji: '🌳' }, { word: 'Tiger', emoji: '🐯' }, { word: 'Turtle', emoji: '🐢' }, { word: 'Train', emoji: '🚂' }],
+  U: [{ word: 'Umbrella', emoji: '☂️' }, { word: 'Unicorn', emoji: '🦄' }, { word: 'Ukulele', emoji: '🎸' }],
+  V: [{ word: 'Violin', emoji: '🎻' }, { word: 'Volcano', emoji: '🌋' }, { word: 'Van', emoji: '🚐' }],
+  W: [{ word: 'Whale', emoji: '🐋' }, { word: 'Watermelon', emoji: '🍉' }, { word: 'Worm', emoji: '🪱' }, { word: 'Wolf', emoji: '🐺' }],
+  X: [{ word: 'X-ray', emoji: '🩻' }, { word: 'Xylophone', emoji: '🎶' }, { word: 'Fox', emoji: '🦊' }],
+  Y: [{ word: 'Yarn', emoji: '🧶' }, { word: 'Yak', emoji: '🐂' }, { word: 'Yogurt', emoji: '🥛' }],
+  Z: [{ word: 'Zebra', emoji: '🦓' }, { word: 'Zoo', emoji: '🦁' }, { word: 'Zucchini', emoji: '🥒' }],
+}
+
+function getRandomLetterItem(letter) {
+  const items = LETTER_DATA[letter]
+  return items[Math.floor(Math.random() * items.length)]
 }
 
 // ─── Counting Garden Data ──────────────────────────────────────────────────
@@ -909,10 +914,12 @@ function PatternGame({ onBack }) {
 // ─── Letter Land Screen ────────────────────────────────────────────────────
 function LetterLand({ onBack }) {
   const [selected, setSelected] = useState(null)
+  const [currentItem, setCurrentItem] = useState(null)
 
   const handleLetterTap = (letter, idx) => {
     playLetterSound(idx)
     setSelected(letter)
+    setCurrentItem(getRandomLetterItem(letter))
   }
 
   const currentIdx = selected ? LETTERS.indexOf(selected) : -1
@@ -938,13 +945,13 @@ function LetterLand({ onBack }) {
             {selected}
           </div>
           <div style={{ fontSize: '64px', animation: 'popIn 0.3s ease-out 0.1s both' }}>
-            {LETTER_DATA[selected].emoji}
+            {currentItem.emoji}
           </div>
           <div style={{
             fontSize: 'clamp(24px, 6vw, 36px)', fontWeight: 800,
             color: '#5D4E6D', animation: 'fadeSlideIn 0.4s ease-out 0.15s both',
           }}>
-            {selected} is for {LETTER_DATA[selected].word}
+            {selected} is for {currentItem.word}
           </div>
           <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
             {currentIdx > 0 && (
