@@ -1,25 +1,33 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 
 // ─── Audio helpers (Web Audio API, no files needed) ─────────────────────────
-const audioCtx = typeof AudioContext !== 'undefined'
-  ? new AudioContext()
-  : typeof webkitAudioContext !== 'undefined'
-    ? new webkitAudioContext()
-    : null
+let audioCtx = null
+
+function getAudioCtx() {
+  if (!audioCtx) {
+    audioCtx = typeof AudioContext !== 'undefined'
+      ? new AudioContext()
+      : typeof webkitAudioContext !== 'undefined'
+        ? new webkitAudioContext()
+        : null
+  }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume()
+  return audioCtx
+}
 
 function playTone(freq, duration = 0.15, type = 'sine', volume = 0.12) {
-  if (!audioCtx) return
-  if (audioCtx.state === 'suspended') audioCtx.resume()
-  const osc = audioCtx.createOscillator()
-  const gain = audioCtx.createGain()
+  const ctx = getAudioCtx()
+  if (!ctx) return
+  const osc = ctx.createOscillator()
+  const gain = ctx.createGain()
   osc.type = type
   osc.frequency.value = freq
   gain.gain.value = volume
-  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration)
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration)
   osc.connect(gain)
-  gain.connect(audioCtx.destination)
+  gain.connect(ctx.destination)
   osc.start()
-  osc.stop(audioCtx.currentTime + duration)
+  osc.stop(ctx.currentTime + duration)
 }
 
 function playHappyChime() {
@@ -81,19 +89,19 @@ function playCombine() {
 // ─── Dinosaur sounds ────────────────────────────────────────────────────────
 function playDinoRoar() {
   // Deep rumbling roar (T-Rex)
-  if (!audioCtx) return
-  if (audioCtx.state === 'suspended') audioCtx.resume()
-  const osc = audioCtx.createOscillator()
-  const gain = audioCtx.createGain()
+  const ctx = getAudioCtx()
+  if (!ctx) return
+  const osc = ctx.createOscillator()
+  const gain = ctx.createGain()
   osc.type = 'sawtooth'
-  osc.frequency.setValueAtTime(120, audioCtx.currentTime)
-  osc.frequency.exponentialRampToValueAtTime(60, audioCtx.currentTime + 0.4)
-  gain.gain.setValueAtTime(0.15, audioCtx.currentTime)
-  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5)
+  osc.frequency.setValueAtTime(120, ctx.currentTime)
+  osc.frequency.exponentialRampToValueAtTime(60, ctx.currentTime + 0.4)
+  gain.gain.setValueAtTime(0.15, ctx.currentTime)
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5)
   osc.connect(gain)
-  gain.connect(audioCtx.destination)
+  gain.connect(ctx.destination)
   osc.start()
-  osc.stop(audioCtx.currentTime + 0.5)
+  osc.stop(ctx.currentTime + 0.5)
   setTimeout(() => {
     playTone(80, 0.3, 'sawtooth', 0.1)
   }, 200)
@@ -148,17 +156,17 @@ function playDinoSnap() {
 
 function playDinoSplash() {
   // Water splash (Spinosaurus)
-  if (!audioCtx) return
-  if (audioCtx.state === 'suspended') audioCtx.resume()
-  const bufferSize = audioCtx.sampleRate * 0.3
-  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate)
+  const ctx = getAudioCtx()
+  if (!ctx) return
+  const bufferSize = ctx.sampleRate * 0.3
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate)
   const data = buffer.getChannelData(0)
   for (let i = 0; i < bufferSize; i++) {
     data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3)) * 0.08
   }
-  const source = audioCtx.createBufferSource()
+  const source = ctx.createBufferSource()
   source.buffer = buffer
-  source.connect(audioCtx.destination)
+  source.connect(ctx.destination)
   source.start()
   playTone(100, 0.3, 'sawtooth', 0.1)
 }
