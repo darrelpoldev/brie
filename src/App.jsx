@@ -78,6 +78,167 @@ function playCombine() {
   setTimeout(() => playTone(659, 0.25, 'sine', 0.12), 300)
 }
 
+// ─── Dinosaur sounds ────────────────────────────────────────────────────────
+function playDinoRoar() {
+  // Deep rumbling roar (T-Rex)
+  if (!audioCtx) return
+  if (audioCtx.state === 'suspended') audioCtx.resume()
+  const osc = audioCtx.createOscillator()
+  const gain = audioCtx.createGain()
+  osc.type = 'sawtooth'
+  osc.frequency.setValueAtTime(120, audioCtx.currentTime)
+  osc.frequency.exponentialRampToValueAtTime(60, audioCtx.currentTime + 0.4)
+  gain.gain.setValueAtTime(0.15, audioCtx.currentTime)
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5)
+  osc.connect(gain)
+  gain.connect(audioCtx.destination)
+  osc.start()
+  osc.stop(audioCtx.currentTime + 0.5)
+  setTimeout(() => {
+    playTone(80, 0.3, 'sawtooth', 0.1)
+  }, 200)
+}
+
+function playDinoStomp() {
+  // Heavy stomping (Brachiosaurus)
+  playTone(60, 0.25, 'square', 0.12)
+  setTimeout(() => playTone(50, 0.3, 'square', 0.1), 200)
+  setTimeout(() => playTone(80, 0.15, 'sine', 0.06), 350)
+}
+
+function playDinoChirp() {
+  // High-pitched chirpy call (Parasaurolophus)
+  playTone(600, 0.15, 'sine', 0.1)
+  setTimeout(() => playTone(800, 0.15, 'sine', 0.1), 120)
+  setTimeout(() => playTone(700, 0.2, 'sine', 0.08), 240)
+  setTimeout(() => playTone(900, 0.25, 'sine', 0.1), 360)
+}
+
+function playDinoFlap() {
+  // Flapping/swooshing (Pteranodon)
+  playTone(300, 0.08, 'triangle', 0.08)
+  setTimeout(() => playTone(500, 0.08, 'triangle', 0.08), 80)
+  setTimeout(() => playTone(350, 0.08, 'triangle', 0.06), 160)
+  setTimeout(() => playTone(550, 0.1, 'triangle', 0.08), 240)
+}
+
+function playDinoRattle() {
+  // Rattling/clicking (Stegosaurus tail plates)
+  playTone(200, 0.06, 'square', 0.06)
+  setTimeout(() => playTone(250, 0.06, 'square', 0.06), 70)
+  setTimeout(() => playTone(180, 0.06, 'square', 0.06), 140)
+  setTimeout(() => playTone(220, 0.08, 'square', 0.06), 210)
+  setTimeout(() => playTone(300, 0.12, 'sine', 0.08), 280)
+}
+
+function playDinoHonk() {
+  // Horn-like honk (Triceratops)
+  playTone(180, 0.2, 'sawtooth', 0.1)
+  setTimeout(() => playTone(220, 0.25, 'sawtooth', 0.12), 150)
+  setTimeout(() => playTone(160, 0.15, 'sawtooth', 0.08), 350)
+}
+
+function playDinoSnap() {
+  // Quick snapping bite (Velociraptor)
+  playTone(400, 0.05, 'square', 0.1)
+  setTimeout(() => playTone(350, 0.05, 'square', 0.1), 60)
+  setTimeout(() => playTone(500, 0.08, 'sine', 0.08), 120)
+  setTimeout(() => playTone(600, 0.06, 'sine', 0.06), 180)
+}
+
+function playDinoSplash() {
+  // Water splash (Spinosaurus)
+  if (!audioCtx) return
+  if (audioCtx.state === 'suspended') audioCtx.resume()
+  const bufferSize = audioCtx.sampleRate * 0.3
+  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate)
+  const data = buffer.getChannelData(0)
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3)) * 0.08
+  }
+  const source = audioCtx.createBufferSource()
+  source.buffer = buffer
+  source.connect(audioCtx.destination)
+  source.start()
+  playTone(100, 0.3, 'sawtooth', 0.1)
+}
+
+// ─── Dinosaur Data ──────────────────────────────────────────────────────────
+const DINOSAURS = [
+  {
+    name: 'T-Rex',
+    fullName: 'Tyrannosaurus Rex',
+    emoji: '🦖',
+    color: '#66BB6A',
+    fact: 'King of the dinosaurs!',
+    playSound: playDinoRoar,
+    bgColor: '#E8F5E9',
+  },
+  {
+    name: 'Brachio',
+    fullName: 'Brachiosaurus',
+    emoji: '🦕',
+    color: '#42A5F5',
+    fact: 'Super tall and gentle!',
+    playSound: playDinoStomp,
+    bgColor: '#E3F2FD',
+  },
+  {
+    name: 'Para',
+    fullName: 'Parasaurolophus',
+    emoji: '🦎',
+    color: '#AB47BC',
+    fact: 'Has a cool head crest!',
+    playSound: playDinoChirp,
+    bgColor: '#F3E5F5',
+  },
+  {
+    name: 'Ptero',
+    fullName: 'Pteranodon',
+    emoji: '🦅',
+    color: '#FFA726',
+    fact: 'Flies through the sky!',
+    playSound: playDinoFlap,
+    bgColor: '#FFF3E0',
+  },
+  {
+    name: 'Stego',
+    fullName: 'Stegosaurus',
+    emoji: '🐊',
+    color: '#EF5350',
+    fact: 'Has cool back plates!',
+    playSound: playDinoRattle,
+    bgColor: '#FFEBEE',
+  },
+  {
+    name: 'Tricera',
+    fullName: 'Triceratops',
+    emoji: '🦏',
+    color: '#26A69A',
+    fact: 'Three horns on its head!',
+    playSound: playDinoHonk,
+    bgColor: '#E0F2F1',
+  },
+  {
+    name: 'Raptor',
+    fullName: 'Velociraptor',
+    emoji: '🐉',
+    color: '#FF7043',
+    fact: 'Small but super fast!',
+    playSound: playDinoSnap,
+    bgColor: '#FBE9E7',
+  },
+  {
+    name: 'Spino',
+    fullName: 'Spinosaurus',
+    emoji: '🐲',
+    color: '#5C6BC0',
+    fact: 'Loves to swim in rivers!',
+    playSound: playDinoSplash,
+    bgColor: '#E8EAF6',
+  },
+]
+
 // ─── Color palette ──────────────────────────────────────────────────────────
 const COLORS = ['#FF8A80', '#FFAB91', '#CE93D8', '#81D4FA', '#A5D6A7', '#FFE082', '#F48FB1', '#80CBC4']
 
@@ -2176,6 +2337,154 @@ function ToddlerTime({ onBack }) {
   )
 }
 
+// ─── Dino World Screen ──────────────────────────────────────────────────────
+function DinoWorld({ onBack }) {
+  const [activeDino, setActiveDino] = useState(null)
+  const [bouncingDinos, setBouncingDinos] = useState({})
+  const [footprints, setFootprints] = useState([])
+  const footprintId = useRef(0)
+
+  const handleDinoTap = (dino, idx) => {
+    dino.playSound()
+    setActiveDino(idx)
+    setBouncingDinos(prev => ({ ...prev, [idx]: true }))
+
+    // Add a footprint trail
+    setFootprints(prev => [
+      ...prev.slice(-8),
+      { id: footprintId.current++, emoji: '🦶', x: 20 + Math.random() * 60, y: 30 + Math.random() * 40 }
+    ])
+
+    setTimeout(() => {
+      setBouncingDinos(prev => ({ ...prev, [idx]: false }))
+    }, 600)
+
+    setTimeout(() => {
+      setActiveDino(null)
+    }, 2000)
+  }
+
+  return (
+    <div style={s.app}>
+      <nav style={s.nav}>
+        <button style={s.backBtn} onClick={onBack} aria-label="Back">←</button>
+        <span style={s.navTitle}>🦕 Dino World</span>
+      </nav>
+
+      {/* Active dino display */}
+      <div style={{
+        padding: '16px 20px',
+        textAlign: 'center',
+        minHeight: '90px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: activeDino !== null ? DINOSAURS[activeDino].bgColor : 'transparent',
+        transition: 'background 0.3s ease',
+      }}>
+        {activeDino !== null ? (
+          <div style={{ animation: 'popIn 0.3s ease-out' }}>
+            <div style={{ fontSize: 'clamp(14px, 4vw, 18px)', fontWeight: 800, color: DINOSAURS[activeDino].color }}>
+              {DINOSAURS[activeDino].fullName}
+            </div>
+            <div style={{ fontSize: 'clamp(13px, 3.5vw, 16px)', fontWeight: 600, color: '#9E8DAE', marginTop: '4px' }}>
+              {DINOSAURS[activeDino].fact}
+            </div>
+          </div>
+        ) : (
+          <div style={{ fontSize: 'clamp(14px, 4vw, 18px)', fontWeight: 700, color: '#BBA8CC' }}>
+            Tap a dinosaur to hear it!
+          </div>
+        )}
+      </div>
+
+      {/* Dino grid */}
+      <div style={{
+        flex: 1,
+        overflow: 'auto',
+        padding: '8px 16px 20px',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, 1fr)',
+        gap: '12px',
+        alignContent: 'start',
+      }}>
+        {DINOSAURS.map((dino, idx) => (
+          <button
+            key={dino.name}
+            onClick={() => handleDinoTap(dino, idx)}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              padding: '16px 8px',
+              borderRadius: '24px',
+              border: activeDino === idx ? `3px solid ${dino.color}` : '3px solid transparent',
+              background: dino.bgColor,
+              cursor: 'pointer',
+              boxShadow: activeDino === idx ? `0 6px 24px ${dino.color}33` : '0 4px 16px rgba(0,0,0,0.06)',
+              transition: 'transform 0.2s, box-shadow 0.2s, border 0.2s',
+              animation: bouncingDinos[idx]
+                ? 'celebrate 0.5s ease'
+                : `fadeSlideIn 0.4s ease-out ${idx * 0.08}s both`,
+              WebkitTapHighlightColor: 'transparent',
+              aspectRatio: '1',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.05)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = '' }}
+          >
+            <span style={{
+              fontSize: 'clamp(40px, 10vw, 56px)',
+              lineHeight: 1,
+              filter: bouncingDinos[idx] ? 'drop-shadow(0 0 8px rgba(0,0,0,0.2))' : 'none',
+              transition: 'filter 0.2s',
+            }}>
+              {dino.emoji}
+            </span>
+            <div style={{
+              fontSize: 'clamp(13px, 3.5vw, 16px)',
+              fontWeight: 800,
+              color: dino.color,
+              lineHeight: 1.2,
+            }}>
+              {dino.name}
+            </div>
+            <div style={{
+              fontSize: '10px',
+              fontWeight: 600,
+              color: '#BBA8CC',
+              lineHeight: 1,
+            }}>
+              Tap me!
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {/* Footprint trail decoration */}
+      {footprints.map((fp) => (
+        <div
+          key={fp.id}
+          style={{
+            position: 'fixed',
+            left: `${fp.x}%`,
+            top: `${fp.y}%`,
+            fontSize: '20px',
+            opacity: 0.3,
+            pointerEvents: 'none',
+            animation: 'fadeIn 0.3s ease-out',
+            transform: `rotate(${Math.random() * 60 - 30}deg)`,
+          }}
+        >
+          {fp.emoji}
+        </div>
+      ))}
+    </div>
+  )
+}
+
 // ─── Main App ───────────────────────────────────────────────────────────────
 export default function App() {
   const [screen, setScreen] = useState('home')
@@ -2270,6 +2579,10 @@ export default function App() {
     return <ToddlerTime onBack={() => setScreen('home')} />
   }
 
+  if (screen === 'dinos') {
+    return <DinoWorld onBack={() => setScreen('home')} />
+  }
+
   return (
     <div style={s.app}>
       <div style={s.home}>
@@ -2328,6 +2641,7 @@ export default function App() {
             { icon: '🎨', label: 'Colors', screen: 'colors' },
             { icon: '🧩', label: 'Mix & Match', screen: 'combine' },
             { icon: '🕐', label: 'Time', screen: 'time' },
+            { icon: '🦕', label: 'Dinos', screen: 'dinos' },
           ].map((game, idx) => (
             <button
               key={game.screen}
