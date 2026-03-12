@@ -2352,8 +2352,7 @@ function DinoWorld({ onBack }) {
   const [footprints, setFootprints] = useState([])
   const footprintId = useRef(0)
 
-  const handleDinoTap = (e, dino, idx) => {
-    e.preventDefault()
+  const handleDinoTap = (dino, idx) => {
     dino.playSound()
     setActiveDino(idx)
     setBouncingDinos(prev => ({ ...prev, [idx]: true }))
@@ -2421,7 +2420,7 @@ function DinoWorld({ onBack }) {
         {DINOSAURS.map((dino, idx) => (
           <button
             key={dino.name}
-            onPointerDown={(e) => handleDinoTap(e, dino, idx)}
+            onClick={() => handleDinoTap(dino, idx)}
             style={{
               display: 'flex',
               flexDirection: 'column',
