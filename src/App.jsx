@@ -2511,6 +2511,22 @@ export default function App() {
     }
   }, [])
 
+  // Pre-initialize AudioContext on first user interaction (required by mobile browsers)
+  useEffect(() => {
+    const initAudio = () => {
+      const ctx = getAudioCtx()
+      if (ctx && ctx.state === 'suspended') ctx.resume()
+      document.removeEventListener('touchstart', initAudio)
+      document.removeEventListener('click', initAudio)
+    }
+    document.addEventListener('touchstart', initAudio, { once: true })
+    document.addEventListener('click', initAudio, { once: true })
+    return () => {
+      document.removeEventListener('touchstart', initAudio)
+      document.removeEventListener('click', initAudio)
+    }
+  }, [])
+
   // Capture PWA install prompt & detect installed state
   useEffect(() => {
     // Check if already running as installed PWA
