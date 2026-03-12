@@ -1939,6 +1939,236 @@ function MixAndMatch({ onBack }) {
   )
 }
 
+// ─── Toddler Time Data ────────────────────────────────────────────────────
+const TIME_ACTIVITIES = [
+  { hour: 7, label: 'Wake Up!', emoji: '🌅', sky: 'linear-gradient(180deg, #FFE0B2 0%, #FFCC80 100%)', description: 'Good morning!' },
+  { hour: 8, label: 'Breakfast', emoji: '🥣', sky: 'linear-gradient(180deg, #FFF9C4 0%, #FFE082 100%)', description: 'Yummy cereal!' },
+  { hour: 9, label: 'Playtime', emoji: '🧸', sky: 'linear-gradient(180deg, #B3E5FC 0%, #81D4FA 100%)', description: 'Time to play!' },
+  { hour: 10, label: 'Outside', emoji: '🌳', sky: 'linear-gradient(180deg, #B2EBF2 0%, #80DEEA 100%)', description: 'Let\'s go outside!' },
+  { hour: 11, label: 'Story Time', emoji: '📖', sky: 'linear-gradient(180deg, #C8E6C9 0%, #A5D6A7 100%)', description: 'Read a book!' },
+  { hour: 12, label: 'Lunch', emoji: '🍕', sky: 'linear-gradient(180deg, #BBDEFB 0%, #64B5F6 100%)', description: 'Lunchtime!' },
+  { hour: 1, label: 'Nap Time', emoji: '😴', sky: 'linear-gradient(180deg, #D1C4E9 0%, #B39DDB 100%)', description: 'Sleepy time...' },
+  { hour: 2, label: 'Wake Up!', emoji: '🌤️', sky: 'linear-gradient(180deg, #B3E5FC 0%, #4FC3F7 100%)', description: 'Hello again!' },
+  { hour: 3, label: 'Snack', emoji: '🍎', sky: 'linear-gradient(180deg, #C8E6C9 0%, #81C784 100%)', description: 'Apple snack!' },
+  { hour: 4, label: 'Art Time', emoji: '🎨', sky: 'linear-gradient(180deg, #F8BBD0 0%, #F48FB1 100%)', description: 'Let\'s draw!' },
+  { hour: 5, label: 'Dinner', emoji: '🍝', sky: 'linear-gradient(180deg, #FFCCBC 0%, #FF8A65 100%)', description: 'Dinner is ready!' },
+  { hour: 6, label: 'Bath Time', emoji: '🛁', sky: 'linear-gradient(180deg, #B2EBF2 0%, #80CBC4 100%)', description: 'Splish splash!' },
+  { hour: 7, label: 'Bedtime', emoji: '🌙', sky: 'linear-gradient(180deg, #311B92 0%, #4527A0 100%)', description: 'Goodnight!' },
+]
+
+function playClockTick() {
+  playTone(800, 0.05, 'sine', 0.04)
+  setTimeout(() => playTone(600, 0.05, 'sine', 0.03), 60)
+}
+
+// ─── Toddler Time Screen ─────────────────────────────────────────────────
+function ToddlerTime({ onBack }) {
+  const [activityIndex, setActivityIndex] = useState(0)
+  const [animating, setAnimating] = useState(false)
+
+  const activity = TIME_ACTIVITIES[activityIndex]
+  const isNight = activityIndex >= 11 // Bath and Bedtime
+
+  const goNext = () => {
+    if (animating) return
+    playClockTick()
+    setAnimating(true)
+    setTimeout(() => setAnimating(false), 500)
+    setActivityIndex(prev => (prev + 1) % TIME_ACTIVITIES.length)
+    if ((activityIndex + 1) % TIME_ACTIVITIES.length === 0) {
+      setTimeout(playHappyChime, 300)
+    }
+  }
+
+  const goPrev = () => {
+    if (animating) return
+    playClockTick()
+    setAnimating(true)
+    setTimeout(() => setAnimating(false), 500)
+    setActivityIndex(prev => (prev - 1 + TIME_ACTIVITIES.length) % TIME_ACTIVITIES.length)
+  }
+
+  // Calculate hour hand angle (30 degrees per hour)
+  const displayHour = activity.hour
+  const hourAngle = (displayHour % 12) * 30
+
+  // The clock SVG
+  const clockSize = 220
+  const cx = clockSize / 2
+  const cy = clockSize / 2
+  const clockRadius = clockSize / 2 - 10
+
+  return (
+    <div style={s.app}>
+      <nav style={s.nav}>
+        <button style={s.backBtn} onClick={onBack} aria-label="Back">←</button>
+        <span style={s.navTitle}>🕐 Toddler Time</span>
+      </nav>
+
+      <div style={{
+        flex: 1, display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        padding: '16px 20px', gap: '16px', overflow: 'auto',
+        background: activity.sky,
+        transition: 'background 0.6s ease',
+      }}>
+        {/* Activity emoji and label */}
+        <div style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
+          animation: animating ? 'popIn 0.4s ease-out' : 'none',
+        }}>
+          <span style={{
+            fontSize: 'clamp(48px, 14vw, 72px)', lineHeight: 1,
+            filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))',
+          }}>
+            {activity.emoji}
+          </span>
+          <div style={{
+            fontSize: 'clamp(24px, 7vw, 36px)', fontWeight: 900,
+            color: isNight ? '#E8EAF6' : '#5D4E6D',
+            textShadow: isNight ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 4px rgba(0,0,0,0.1)',
+            textAlign: 'center',
+          }}>
+            {activity.label}
+          </div>
+          <div style={{
+            fontSize: 'clamp(14px, 4vw, 18px)', fontWeight: 600,
+            color: isNight ? '#B39DDB' : '#9E8DAE',
+          }}>
+            {activity.description}
+          </div>
+        </div>
+
+        {/* Clock face */}
+        <div style={{
+          background: 'rgba(255,255,255,0.9)',
+          borderRadius: '50%',
+          padding: '12px',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+          animation: animating ? 'popIn 0.3s ease-out' : 'none',
+        }}>
+          <svg width={clockSize} height={clockSize} viewBox={`0 0 ${clockSize} ${clockSize}`}>
+            {/* Clock circle */}
+            <circle cx={cx} cy={cy} r={clockRadius} fill="white" stroke="#E0E0E0" strokeWidth="3" />
+
+            {/* Hour numbers */}
+            {[...Array(12)].map((_, i) => {
+              const num = i + 1
+              const angle = (num * 30 - 90) * Math.PI / 180
+              const x = cx + (clockRadius - 22) * Math.cos(angle)
+              const y = cy + (clockRadius - 22) * Math.sin(angle)
+              const isActive = num === displayHour % 12 || (displayHour === 12 && num === 12)
+              return (
+                <text
+                  key={num}
+                  x={x}
+                  y={y}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fill={isActive ? '#CE93D8' : '#5D4E6D'}
+                  fontSize={isActive ? '22' : '18'}
+                  fontWeight={isActive ? '900' : '700'}
+                  fontFamily="Nunito, sans-serif"
+                >
+                  {num}
+                </text>
+              )
+            })}
+
+            {/* Hour tick marks */}
+            {[...Array(12)].map((_, i) => {
+              const angle = (i * 30) * Math.PI / 180
+              const x1 = cx + (clockRadius - 4) * Math.cos(angle)
+              const y1 = cy + (clockRadius - 4) * Math.sin(angle)
+              const x2 = cx + (clockRadius - 10) * Math.cos(angle)
+              const y2 = cy + (clockRadius - 10) * Math.sin(angle)
+              return (
+                <line key={`tick-${i}`} x1={x1} y1={y1} x2={x2} y2={y2}
+                  stroke="#BDBDBD" strokeWidth="2" strokeLinecap="round" />
+              )
+            })}
+
+            {/* Hour hand */}
+            <line
+              x1={cx}
+              y1={cy}
+              x2={cx + 55 * Math.cos((hourAngle - 90) * Math.PI / 180)}
+              y2={cy + 55 * Math.sin((hourAngle - 90) * Math.PI / 180)}
+              stroke="#CE93D8"
+              strokeWidth="6"
+              strokeLinecap="round"
+              style={{ transition: 'x2 0.5s ease, y2 0.5s ease' }}
+            />
+
+            {/* Center dot */}
+            <circle cx={cx} cy={cy} r="8" fill="#CE93D8" />
+            <circle cx={cx} cy={cy} r="4" fill="white" />
+          </svg>
+        </div>
+
+        {/* Time display */}
+        <div style={{
+          fontSize: 'clamp(28px, 8vw, 44px)', fontWeight: 900,
+          color: isNight ? '#E8EAF6' : '#5D4E6D',
+          background: 'rgba(255,255,255,0.7)',
+          padding: '8px 24px', borderRadius: '20px',
+          backdropFilter: 'blur(8px)',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
+          textAlign: 'center',
+          animation: animating ? 'popIn 0.3s ease-out' : 'none',
+        }}>
+          {displayHour === 12 ? '12' : displayHour} : 00
+          <span style={{ fontSize: 'clamp(14px, 4vw, 20px)', marginLeft: '4px', fontWeight: 700 }}>
+            {activityIndex <= 4 ? 'AM' : 'PM'}
+          </span>
+        </div>
+
+        {/* Navigation buttons */}
+        <div style={{
+          display: 'flex', gap: '20px', alignItems: 'center',
+        }}>
+          <button
+            style={{
+              width: '64px', height: '64px', borderRadius: '50%', border: 'none',
+              background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(8px)',
+              fontSize: '28px', cursor: 'pointer',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'transform 0.2s',
+            }}
+            onClick={goPrev}
+            aria-label="Previous hour"
+          >
+            ◀
+          </button>
+
+          <div style={{
+            fontSize: 'clamp(12px, 3vw, 14px)', fontWeight: 700,
+            color: isNight ? '#B39DDB' : '#9E8DAE', textAlign: 'center',
+          }}>
+            {activityIndex + 1} / {TIME_ACTIVITIES.length}
+          </div>
+
+          <button
+            style={{
+              width: '64px', height: '64px', borderRadius: '50%', border: 'none',
+              background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(8px)',
+              fontSize: '28px', cursor: 'pointer',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'transform 0.2s',
+            }}
+            onClick={goNext}
+            aria-label="Next hour"
+          >
+            ▶
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Main App ───────────────────────────────────────────────────────────────
 export default function App() {
   const [screen, setScreen] = useState('home')
@@ -2029,6 +2259,10 @@ export default function App() {
     return <MixAndMatch onBack={() => setScreen('home')} />
   }
 
+  if (screen === 'time') {
+    return <ToddlerTime onBack={() => setScreen('home')} />
+  }
+
   return (
     <div style={s.app}>
       <div style={s.home}>
@@ -2086,6 +2320,7 @@ export default function App() {
             { icon: '📖', label: 'Stories', screen: 'story' },
             { icon: '🎨', label: 'Colors', screen: 'colors' },
             { icon: '🧩', label: 'Mix & Match', screen: 'combine' },
+            { icon: '🕐', label: 'Time', screen: 'time' },
           ].map((game, idx) => (
             <button
               key={game.screen}
