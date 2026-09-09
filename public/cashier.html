@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#FEF3E8">
+<title>Little Shop · BRIE</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; color: #5D4E6D; background: linear-gradient(135deg, #FEF3E8, #F3E5F5, #E3F2FD); min-height: 100vh; font-family: 'Nunito', ui-rounded, system-ui, sans-serif; }
+button, a { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+button { font: inherit; font-weight: 800; color: inherit; cursor: pointer; border: 0; border-radius: 18px; padding: 14px 20px; min-height: 48px; background: white; }
+button:disabled { cursor: default; opacity: .55; }
+button:not(:disabled):active { transform: scale(.97); }
+:focus-visible { outline: 3px solid #75518C; outline-offset: 4px; }
+nav { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #ffffff99; }
+nav a { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; background: white; text-decoration: none; color: inherit; font-size: 24px; }
+nav strong { flex: 1; font-size: 20px; }
+nav button { padding: 10px; font-size: 14px; }
+main { width: min(100%, 850px); margin: auto; padding: 22px 16px 32px; }
+header { text-align: center; }
+.eyebrow { font-size: 12px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
+h1 { font-size: clamp(30px, 6vw, 46px); margin: 6px 0; }
+p { line-height: 1.5; margin: 8px 0 16px; }
+.roles { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 16px 0; }
+.role { padding: 10px 16px; border-radius: 16px; background: #ffffffa6; font-weight: 750; }
+.role.active { background: #CE93D8; }
+.steps { display: flex; justify-content: center; gap: 8px; padding: 0; list-style: none; font-size: 13px; }
+.steps li { padding: 8px 12px; border-radius: 14px; }
+.steps [aria-current="step"] { background: #FFE082; font-weight: 800; }
+.panel { background: #ffffffbf; border: 2px solid white; padding: clamp(16px, 4vw, 28px); border-radius: 28px; box-shadow: 0 8px 30px #5d4e6d0a; margin-top: 16px; text-align: center; }
+h2 { margin: 0 0 8px; font-size: clamp(22px, 4vw, 28px); }
+.shelf { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0; }
+.product { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 8px; border: 2px solid white; }
+.emoji { font-size: clamp(36px, 8vw, 54px); line-height: 1.2; }
+.price { font-size: 13px; font-weight: 650; }
+.basket { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 16px 0; min-height: 70px; align-items: center; }
+.basket button { background: #F3E5F5; }
+.actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+.primary { background: #A5D6A7; }
+.secondary { background: #81D4FA; }
+.quiet { background: transparent; font-size: 14px; text-decoration: underline; }
+.display { background: #E0F2F1; padding: 18px; border-radius: 20px; margin: 16px auto; }
+.total { display: block; font-weight: 900; font-size: 36px; }
+.coins { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 18px 0; }
+.coin { width: 46px; height: 46px; border-radius: 50%; border: 2px dashed #9E8DAE; display: grid; place-items: center; font-weight: 800; background: #fff; }
+.coin.paid { background: #FFE082; border: 2px solid #BC8C32; }
+.receipt { max-width: 360px; margin: 16px auto; padding: 20px; background: white; border-top: 4px dashed #CE93D8; border-bottom: 4px dashed #CE93D8; }
+.receipt div { display: flex; justify-content: space-between; padding: 8px 0; gap: 16px; }
+.hint { font-size: 14px; }
+#status { min-height: 24px; font-weight: 700; text-align: center; margin: 14px 0 0; }
+@media (max-width: 380px) { .shelf { gap: 8px; } .steps { gap: 0; } .steps li { padding: 8px; } nav strong { font-size: 17px; } }
+</style>
+</head>
+<body>
+<nav aria-label="Game navigation"><a href="./" aria-label="Back to games">←</a><strong>🛒 Little Shop</strong><button id="sound" aria-pressed="false">Sound on</button></nav>
+<main>
+<header><div class="eyebrow">A little shop for two</div><h1>Let's play shop!</h1><p>Pick, beep, count. Then swap!</p></header>
+<div id="roles" class="roles"></div>
+<ol class="steps" aria-label="Checkout steps"><li>1 · Pick</li><li>2 · Scan</li><li>3 · Pay</li><li>4 · Yay!</li></ol>
+<section id="game" class="panel" aria-labelledby="turn-title"></section>
+<p id="status" role="status" aria-live="polite"></p>
+</main>
+<script>
+// All play state stays in memory and resets when this page is left or reloaded.
+const products = [
+  { name: 'Apple', emoji: '🍎', price: 1, color: '#FF8A80' },
+  { name: 'Banana', emoji: '🍌', price: 1, color: '#FFE082' },
+  { name: 'Milk', emoji: '🥛', price: 2, color: '#81D4FA' },
+  { name: 'Bread', emoji: '🍞', price: 2, color: '#FFAB91' },
+  { name: 'Carrot', emoji: '🥕', price: 1, color: '#A5D6A7' },
+  { name: 'Cookie', emoji: '🍪', price: 2, color: '#CE93D8' },
+];
+let cashier = 'Brie';
+let customer = 'Dad';
+let phase = 0;
+let basket = [];
+let paid = 0;
+let muted = false;
+let audio;
+const game = document.querySelector('#game');
+const status = document.querySelector('#status');
+const total = () => basket.reduce((sum, item) => sum + item.price, 0);
+const coinLabel = amount => `${amount} ${amount === 1 ? 'coin' : 'coins'}`;
+function beep(happy = false) {
+  if (muted) return;
+  try {
+    const Audio = window.AudioContext || window.webkitAudioContext;
+    if (!Audio) return;
+    audio ||= new Audio();
+    if (audio.state === 'suspended') audio.resume().catch(() => {});
+    const tone = audio.createOscillator();
+    const gain = audio.createGain();
+    tone.frequency.setValueAtTime(happy ? 660 : 520, audio.currentTime);
+    if (happy) tone.frequency.setValueAtTime(880, audio.currentTime + .12);
+    gain.gain.setValueAtTime(.07, audio.currentTime);
+    gain.gain.exponentialRampToValueAtTime(.001, audio.currentTime + .25);
+    tone.connect(gain); gain.connect(audio.destination);
+    tone.start(); tone.stop(audio.currentTime + .25);
+  } catch { /* Play also works without audio. */ }
+}
+function render(focusHeading = false) {
+  document.querySelector('#roles').innerHTML = `<span class="role ${phase === 1 ? 'active' : ''}">🧾 ${cashier} · Cashier</span><span class="role ${phase === 0 || phase === 2 ? 'active' : ''}">🛍️ ${customer} · Customer</span>`;
+  document.querySelectorAll('.steps li').forEach((step, index) => {
+    if (index === phase) step.setAttribute('aria-current', 'step');
+    else step.removeAttribute('aria-current');
+  });
+  if (phase === 0) {
+    game.innerHTML = `<h2 id="turn-title" tabindex="-1">${customer}, let's go shopping!</h2>
+      <p>Choose 1, 2, or 3 things. Ask ${cashier}, “Can I buy these, please?”</p>
+      <div class="shelf">${products.map((item, index) => `<button class="product" data-add="${index}" style="background:${item.color}" ${basket.length === 3 ? 'disabled' : ''} aria-label="Add ${item.name}, ${coinLabel(item.price)}"><span class="emoji" aria-hidden="true">${item.emoji}</span><span>${item.name}</span><span class="price">${'🪙'.repeat(item.price)} ${coinLabel(item.price)}</span></button>`).join('')}</div>
+      <strong>🧺 My basket · ${basket.length} / 3</strong>
+      <div class="basket">${basket.length ? basket.map((item, index) => `<button data-remove="${index}" aria-label="Remove ${item.name} from basket">${item.emoji} ${item.name} ×</button>`).join('') : '<span>Tap something yummy to add it.</span>'}</div>
+      <div class="actions"><button class="primary" data-action="scan" ${basket.length ? '' : 'disabled'}>Ready for ${cashier} →</button><button class="quiet" data-action="swap">Swap roles</button></div>`;
+  } else if (phase === 1) {
+    const scanned = basket.filter(item => item.scanned);
+    game.innerHTML = `<h2 id="turn-title" tabindex="-1">${cashier}, you're the cashier!</h2><p>Say “Hello!” Tap each item to scan it. Beep!</p>
+      <div class="shelf">${basket.map((item, index) => `<button class="product" data-scan="${index}" style="background:${item.scanned ? '#A5D6A7' : item.color}" ${item.scanned ? 'disabled' : ''} aria-label="${item.scanned ? 'Scanned' : 'Scan'} ${item.name}"><span class="emoji" aria-hidden="true">${item.emoji}</span><span>${item.name}</span><span class="price">${item.scanned ? '✓ Scanned' : coinLabel(item.price)}</span></button>`).join('')}</div>
+      <div class="display">${scanned.length} of ${basket.length} scanned<span class="total">${coinLabel(scanned.reduce((sum, item) => sum + item.price, 0))}</span><span aria-hidden="true">${scanned.map(item => '🪙'.repeat(item.price)).join(' ')}</span></div>
+      <div class="actions"><button class="primary" data-action="pay" ${scanned.length === basket.length ? '' : 'disabled'}>Ask for ${coinLabel(total())} →</button><button class="quiet" data-action="restart">Start this shop again</button></div>`;
+  } else if (phase === 2) {
+    game.innerHTML = `<h2 id="turn-title" tabindex="-1">${customer}, time to pay!</h2><p>${cashier} says, “${coinLabel(total())}, please!” Count out loud together.</p>
+      <div class="display">Pretend money<span class="total">${paid} / ${coinLabel(total())}</span></div>
+      <div class="coins" aria-label="${paid} of ${total()} coins paid">${Array.from({ length: total() }, (_, index) => `<span class="coin ${index < paid ? 'paid' : ''}" aria-hidden="true">${index + 1}</span>`).join('')}</div>
+      <div class="actions"><button class="secondary" data-action="coin" ${paid === total() ? 'disabled' : ''}>🪙 Give 1 coin</button><button class="quiet" data-action="undo" ${paid ? '' : 'disabled'}>Take 1 back</button></div>
+      <div class="actions"><button class="primary" data-action="finish" ${paid === total() ? '' : 'disabled'}>${cashier}: Give receipt ✓</button></div><p class="hint">${paid === total() ? 'Just right! Say “Thank you!”' : 'One tap, one coin. Fill every circle.'}</p><button class="quiet" data-action="restart">Start this shop again</button>`;
+  } else {
+    game.innerHTML = `<div class="emoji" aria-hidden="true">🛍️ 🌈</div><h2 id="turn-title" tabindex="-1">Thank you for shopping!</h2><p>${cashier} gives ${customer} the bag. “Have a lovely day!”</p>
+      <div class="receipt"><strong>🧾 Little Shop receipt</strong>${basket.map(item => `<div><span>${item.emoji} ${item.name}</span><span>${coinLabel(item.price)}</span></div>`).join('')}<div><strong>Total paid</strong><strong>${coinLabel(total())}</strong></div></div>
+      <p>Next: ${customer} can be the cashier!</p><div class="actions"><button class="primary" data-action="swap">🔄 Swap roles & play</button><button data-action="restart">Shop again · Same roles</button></div>`;
+  }
+  if (focusHeading) document.querySelector('#turn-title').focus();
+}
+function reset(swap) {
+  if (swap) [cashier, customer] = [customer, cashier];
+  phase = 0; basket = []; paid = 0;
+  render(true);
+  status.textContent = swap ? `${cashier} is now the cashier. ${customer} is the customer.` : 'A fresh basket!';
+}
+game.addEventListener('click', event => {
+  const button = event.target.closest('button');
+  if (!button || button.disabled) return;
+  const focusKey = ['add', 'remove', 'scan', 'action'].find(key => key in button.dataset);
+  const focusValue = button.dataset[focusKey];
+  const previousPhase = phase;
+  if (button.dataset.add !== undefined && phase === 0 && basket.length < 3) {
+    const item = products[Number(button.dataset.add)];
+    basket.push({ ...item, scanned: false });
+    status.textContent = `${item.name} in the basket. ${basket.length} ${basket.length === 1 ? 'item' : 'items'}!`;
+  } else if (button.dataset.remove !== undefined && phase === 0) {
+    basket.splice(Number(button.dataset.remove), 1);
+    status.textContent = `${basket.length} ${basket.length === 1 ? 'item' : 'items'} in the basket.`;
+  } else if (button.dataset.scan !== undefined && phase === 1) {
+    const item = basket[Number(button.dataset.scan)];
+    if (item.scanned) return;
+    item.scanned = true;
+    status.textContent = `Beep! ${item.name}, ${coinLabel(item.price)}.`;
+  } else {
+    switch (button.dataset.action) {
+      case 'scan': if (phase === 0 && basket.length) phase = 1; break;
+      case 'pay': if (phase === 1 && basket.every(item => item.scanned)) phase = 2; break;
+      case 'coin': if (phase === 2 && paid < total()) paid++; status.textContent = paid === total() ? `${paid}! Just right!` : `${paid}!`; break;
+      case 'undo': if (phase === 2 && paid > 0) paid--; status.textContent = `${coinLabel(paid)} paid.`; break;
+      case 'finish': if (phase === 2 && paid === total()) phase = 3; break;
+      case 'swap': reset(true); beep(); return;
+      case 'restart': reset(false); beep(); return;
+      default: return;
+    }
+  }
+  beep(phase === 3);
+  if (phase !== previousPhase) status.textContent = '';
+  render(phase !== previousPhase);
+  if (phase === previousPhase) {
+    const replacement = game.querySelector(`[data-${focusKey}="${focusValue}"]:not(:disabled)`);
+    const fallback = game.querySelector('button.primary:not(:disabled), button[data-scan]:not(:disabled), button:not(:disabled)');
+    (replacement || fallback)?.focus();
+  }
+});
+document.querySelector('#sound').addEventListener('click', event => {
+  muted = !muted;
+  event.currentTarget.textContent = muted ? 'Sound off' : 'Sound on';
+  event.currentTarget.setAttribute('aria-pressed', String(muted));
+});
+render();
+</script>
+</body>
+</html>
