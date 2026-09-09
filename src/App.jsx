@@ -2666,11 +2666,19 @@ export default function App() {
             { icon: '🧩', label: 'Mix & Match', screen: 'combine' },
             { icon: '🕐', label: 'Time', screen: 'time' },
             { icon: '🦕', label: 'Dinos', screen: 'dinos' },
+            { icon: '🛒', label: 'Little Shop', screen: 'cashier' },
           ].map((game, idx) => (
             <button
               key={game.screen}
               style={s.toyButton(idx)}
-              onClick={() => { playTap(); setScreen(game.screen) }}
+              onClick={() => {
+                playTap()
+                if (game.screen === 'cashier') {
+                  window.location.assign(`${import.meta.env.BASE_URL}cashier.html`)
+                } else {
+                  setScreen(game.screen)
+                }
+              }}
               onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 6px 28px rgba(0,0,0,0.1)' }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
             >
