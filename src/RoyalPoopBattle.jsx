@@ -306,7 +306,10 @@ export default function RoyalPoopBattle({ onBack }) {
       </div>
     </div> : <div style={{ width: '100%', maxWidth: 650, margin: '6px auto 0', minHeight: 0, flex: 1, display: 'flex', flexDirection: 'column' }}>
       <h2 style={{ margin: '8px 0' }}>{winner !== null ? (winner === 0 ? 'Daddy wins! 🎉' : 'Aubrielle wins! 🎉') : (turn === 0 ? "Daddy's turn!" : "Aubrielle's turn!")}</h2>
-      <div style={{ display: 'flex', justifyContent: 'space-around', fontSize: 17, fontWeight: 800, marginBottom: 12 }}><span>🤴 Daddy: {scores[0]} / 3</span><span>👸 Aubrielle: {scores[1]} / 3</span></div>
+      <div style={{ display: 'flex', justifyContent: 'space-around', fontSize: 15, fontWeight: 800, marginBottom: 9 }}>
+        <span>Daddy {Array.from({ length: 3 }, (_, i) => i < scores[0] ? '💩' : '☆').join(' ')}</span>
+        <span>Aubrielle {Array.from({ length: 3 }, (_, i) => i < scores[1] ? '💩' : '☆').join(' ')}</span>
+      </div>
       <svg ref={stageRef} viewBox={cameraView} preserveAspectRatio="none" role="img" aria-label="Royal poop battle playfield. Drag to aim and release to throw." onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={finishDrag} onPointerCancel={() => { dragRef.current = null; setAim(null) }} style={{ width: '100%', flex: 1, minHeight: 0, borderRadius: 22, touchAction: 'none', background: '#c9eeff', boxShadow: '0 8px 25px #8b75a033', userSelect: 'none' }}>
         <rect x="-200" y="-300" width="800" height="500" fill="#c9eeff" />
         <circle cx="295" cy="39" r="22" fill="#ffe68a" />
@@ -324,6 +327,11 @@ export default function RoyalPoopBattle({ onBack }) {
         <rect x="-200" y={GROUND} width="800" height="220" fill="#6cbf75" />
         <foreignObject x="26" y="137" width="56" height="56" style={{ transformOrigin: '54px 188px', transform: hitPlayer === 0 ? 'rotate(-14deg) scale(.92)' : 'none', transition: 'transform .2s' }}><DaddyPortrait name={PRINCES[prince].name} size={56}/></foreignObject>
         <foreignObject x="278" y="137" width="56" height="56" style={{ transformOrigin: '306px 188px', transform: hitPlayer === 1 ? 'rotate(14deg) scale(.92)' : 'none', transition: 'transform .2s' }}><PrincessPortrait name={PRINCESSES[princess].name} size={56}/></foreignObject>
+        {!shot && !splat && !aim && <g opacity=".9" pointerEvents="none">
+          <text x={current.x} y={current.y - 72} fontSize="15" textAnchor="middle" fill="#77518c" fontWeight="bold">DRAG!</text>
+          <path d={turn === 0 ? `M ${current.x + 10} ${current.y - 65} q 26 -30 49 -18` : `M ${current.x - 10} ${current.y - 65} q -26 -30 -49 -18`} fill="none" stroke="#9b63c1" strokeWidth="3" strokeLinecap="round" strokeDasharray="5 5"/>
+          <text x={current.x + (turn === 0 ? 65 : -65)} y={current.y - 76} fontSize="22" textAnchor="middle">👆</text>
+        </g>}
         {trajectory.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r="2.6" fill="#fff" stroke="#9c67cc" strokeWidth=".4" opacity={0.95 - i * 0.025} />)}
         {aim && <g><text x={current.x + (turn === 0 ? 24 : -24)} y={current.y - 34} fontSize="19" textAnchor="middle">💩</text>
           <rect x={current.x - 28} y={current.y - 68} width="56" height="7" rx="3.5" fill="#fff" opacity=".9"/>
