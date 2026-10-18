@@ -72,6 +72,25 @@ const POSITIONS = [{ x: 54, y: GROUND }, { x: 306, y: GROUND }]
 const clamp = (v, min, max) => Math.max(min, Math.min(max, v))
 const initialScores = () => [0, 0]
 
+// One deterministic flight model is used by both the aim preview and the throw.
+// Sampling at 120 Hz prevents a fast projectile from skipping past a character.
+function simulateThrow(origin, target, velocity) {
+  const start = { x: origin.x, y: origin.y - 27 }
+  const points = [start]
+  for (let i = 1; i <= 480; i++) {
+    const t = i / 120
+    const x = start.x + velocity.vx * t
+    const y = start.y + velocity.vy * t + GRAVITY * t * t / 2
+    const point = { x, y, t }
+    points.push(point)
+    const hit = Math.hypot(x - target.x, y - (target.y - 22)) <= 44
+    if (hit || y >= GROUND - 6 || x < -15 || x > W + 15) {
+      return { points, impact: { ...point, hit } }
+    }
+  }
+  return { points, impact: { ...points[points.length - 1], hit: false } }
+}
+
 export default function RoyalPoopBattle({ onBack }) {
   const [setup, setSetup] = useState(true)
   const [prince, setPrince] = useState(0)
@@ -89,6 +108,8 @@ export default function RoyalPoopBattle({ onBack }) {
   const timeoutRef = useRef(null)
   const audioRef = useRef(null)
   const [reaction, setReaction] = useState(null)
+  const [hitPlayer, setHitPlayer] = useState(null)
+  const [isThrowing, setIsThrowing] = useState(false)
   const [camera, setCamera] = useState({ x: 95, y: 105 })
   const cameraRef = useRef({ x: 95, y: 105 })
   const cameraTargetRef = useRef({ x: 95, y: 105 })
@@ -101,22 +122,28 @@ export default function RoyalPoopBattle({ onBack }) {
   }, [])
 
   useEffect(() => {
+    // Stop scheduling frames when the camera reaches its target.
     let raf
     let last = performance.now()
     const tick = now => {
       const delta = Math.min((now - last) / 1000, 0.05)
       last = now
       const target = cameraTargetRef.current
-      const alpha = 1 - Math.exp(-8 * delta)
       const previous = cameraRef.current
+      const alpha = 1 - Math.exp(-9 * delta)
       const next = { x: previous.x + (target.x - previous.x) * alpha, y: previous.y + (target.y - previous.y) * alpha }
+      if (Math.abs(target.x - next.x) + Math.abs(target.y - next.y) < 0.08) {
+        cameraRef.current = target
+        setCamera(target)
+        return
+      }
       cameraRef.current = next
-      if (Math.abs(next.x - previous.x) + Math.abs(next.y - previous.y) > 0.015) setCamera(next)
+      setCamera(next)
       raf = requestAnimationFrame(tick)
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [])
+  }, [turn, shot, impactCamera, setup])
 
   function coordinates(event) {
     const rect = stageRef.current.getBoundingClientRect()
@@ -127,18 +154,18 @@ export default function RoyalPoopBattle({ onBack }) {
     const start = dragRef.current || point
     const dx = (point.x - start.x) * 190 / point.width
     const dy = (point.y - start.y) * 320 / point.height
-    // Pull back from the target to aim, like a slingshot.
     const direction = turn === 0 ? 1 : -1
-    const pull = clamp(-dx * direction, 0, 115)
-    const lift = clamp(dy, 0, 115)
-    const power = clamp(55 + pull * 0.78, 55, 145)
-    const vx = direction * (100 + power * 1.15)
-    const vy = -(145 + lift * 1.05)
+    // Pull back in any direction. Distance controls power, and vertical pull
+    // adds loft. The default throw is deliberately generous for young players.
+    const distance = clamp(Math.hypot(dx, dy), 0, 145)
+    const power = clamp(65 + distance * 0.48, 65, 135)
+    const vx = direction * (125 + power * 0.8)
+    const vy = -(205 + clamp(dy, -60, 90) * 0.35)
     return { vx, vy, power }
   }
 
   function startDrag(event) {
-    if (setup || winner !== null || shot || splat) return
+    if (setup || winner !== null || shot || splat || isThrowing) return
     event.preventDefault()
     stageRef.current.setPointerCapture(event.pointerId)
     const point = coordinates(event)
@@ -153,9 +180,12 @@ export default function RoyalPoopBattle({ onBack }) {
 
   function finishDrag(event) {
     if (!dragRef.current) return
-    const v = vector(coordinates(event))
+    const point = coordinates(event)
+    const distance = Math.hypot(point.x - dragRef.current.x, point.y - dragRef.current.y)
+    const v = vector(point)
     dragRef.current = null
     setAim(null)
+    if (distance < 12) return // A tap should not accidentally fire.
     launch(v)
   }
 
@@ -179,37 +209,43 @@ export default function RoyalPoopBattle({ onBack }) {
     } catch { /* Audio is optional */ }
   }
 
-  function launch({ vx, vy }) {
-    setImpactCamera(null)
-    const start = { x: current.x, y: current.y - 27 }
-    const startTime = performance.now()
+  function launch(velocity) {
     const shooter = turn
-    const frame = (now) => {
-      const t = Math.min((now - startTime) / 1000, 4)
-      const x = start.x + vx * t
-      const y = start.y + vy * t + GRAVITY * t * t / 2
-      const hit = Math.hypot(x - target.x, y - (target.y - 22)) < 44
-      if (hit || y >= GROUND - 6 || x < -15 || x > W + 15) {
+    const flight = simulateThrow(current, target, velocity)
+    const startTime = performance.now()
+    setIsThrowing(true)
+    setImpactCamera(null)
+    setHitPlayer(null)
+    const frame = now => {
+      const t = Math.min((now - startTime) / 1000, flight.impact.t)
+      const index = Math.min(Math.floor(t * 120), flight.points.length - 1)
+      const point = flight.points[index]
+      if (t >= flight.impact.t) {
+        const impact = flight.impact
+        const hit = impact.hit
         sound(hit)
         setReaction(hit ? 'SPLAT! 🎉' : 'PLOP!')
+        setHitPlayer(hit ? 1 - shooter : null)
         setShot(null)
-        setImpactCamera({ x: clamp(x, 0, W), y: clamp(y, -75, GROUND) })
-        setSplat({ x: clamp(x, 15, W - 15), y: clamp(y, 25, GROUND), hit })
+        setImpactCamera({ x: clamp(impact.x, 0, W), y: clamp(impact.y, -75, GROUND) })
+        setSplat({ x: clamp(impact.x, 15, W - 15), y: clamp(impact.y, 25, GROUND), hit })
         const winningShot = hit && scores[shooter] + 1 >= 3
         if (hit) setScores(prev => prev.map((value, i) => i === shooter ? value + 1 : value))
         if (winningShot) setWinner(shooter)
         timeoutRef.current = setTimeout(() => {
           setSplat(null)
           setReaction(null)
+          setHitPlayer(null)
           setImpactCamera(null)
-          if (!winningShot) setTurn(t => 1 - t)
-        }, 1000)
+          setIsThrowing(false)
+          if (!winningShot) setTurn(1 - shooter)
+        }, 1100)
         return
       }
-      setShot({ x, y })
+      setShot(point)
       animationRef.current = requestAnimationFrame(frame)
     }
-    setShot(start)
+    setShot(flight.points[0])
     animationRef.current = requestAnimationFrame(frame)
   }
 
@@ -217,6 +253,8 @@ export default function RoyalPoopBattle({ onBack }) {
     cancelAnimationFrame(animationRef.current)
     clearTimeout(timeoutRef.current)
     dragRef.current = null
+    setIsThrowing(false)
+    setHitPlayer(null)
     setAim(null)
     setShot(null)
     setImpactCamera(null)
@@ -227,18 +265,9 @@ export default function RoyalPoopBattle({ onBack }) {
     setWinner(null)
   }
 
-  const trajectory = aim ? Array.from({ length: 31 }, (_, i) => {
-    const t = i * 0.055
-    return { x: current.x + aim.vx * t, y: current.y - 27 + aim.vy * t + GRAVITY * t * t / 2 }
-  }).filter(p => p.y < GROUND && p.x >= 0 && p.x <= W) : []
-
-  const landing = aim ? (() => {
-    const a = GRAVITY / 2
-    const b = aim.vy
-    const c = current.y - 27 - (GROUND - 6)
-    const t = (-b + Math.sqrt(b * b - 4 * a * c)) / (2 * a)
-    return { x: current.x + aim.vx * t, y: GROUND - 6 }
-  })() : null
+  const preview = aim ? simulateThrow(current, target, aim) : null
+  const trajectory = preview ? preview.points.filter((_, i) => i % 8 === 0) : []
+  const landing = preview ? preview.impact : null
 
   // Follow the active player while aiming, the projectile in flight, then the impact.
   // Camera coordinates affect presentation only; projectile physics remain in world space.
@@ -293,19 +322,19 @@ export default function RoyalPoopBattle({ onBack }) {
         <path d="M0 172 Q85 115 175 166 Q267 115 360 166 V240 H0Z" fill="#9ddc91" />
         <path d="M0 194 Q100 165 180 190 Q290 158 360 190 V240 H0Z" fill="#75c67b" />
         <rect x="-200" y={GROUND} width="800" height="220" fill="#6cbf75" />
-        <foreignObject x="26" y="137" width="56" height="56"><DaddyPortrait name={PRINCES[prince].name} size={56}/></foreignObject>
-        <foreignObject x="278" y="137" width="56" height="56"><PrincessPortrait name={PRINCESSES[princess].name} size={56}/></foreignObject>
+        <foreignObject x="26" y="137" width="56" height="56" style={{ transformOrigin: '54px 188px', transform: hitPlayer === 0 ? 'rotate(-14deg) scale(.92)' : 'none', transition: 'transform .2s' }}><DaddyPortrait name={PRINCES[prince].name} size={56}/></foreignObject>
+        <foreignObject x="278" y="137" width="56" height="56" style={{ transformOrigin: '306px 188px', transform: hitPlayer === 1 ? 'rotate(14deg) scale(.92)' : 'none', transition: 'transform .2s' }}><PrincessPortrait name={PRINCESSES[princess].name} size={56}/></foreignObject>
         {trajectory.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r="2.6" fill="#fff" stroke="#9c67cc" strokeWidth=".4" opacity={0.95 - i * 0.025} />)}
         {aim && <g><text x={current.x + (turn === 0 ? 24 : -24)} y={current.y - 34} fontSize="19" textAnchor="middle">💩</text>
           <rect x={current.x - 28} y={current.y - 68} width="56" height="7" rx="3.5" fill="#fff" opacity=".9"/>
           <rect x={current.x - 28} y={current.y - 68} width={56 * aim.power / 145} height="7" rx="3.5" fill="#b66ac5"/>
         </g>}
-        {landing && landing.x >= 0 && landing.x <= W && <g opacity=".9"><circle cx={landing.x} cy={landing.y} r="11" fill="none" stroke="#e0569a" strokeWidth="2.5" strokeDasharray="4 3"/><text x={landing.x} y={landing.y - 15} fontSize="9" textAnchor="middle" fill="#773a70" fontWeight="bold">LAND HERE</text></g>}
+        {landing && landing.x >= 0 && landing.x <= W && <g opacity=".95"><circle cx={landing.x} cy={landing.y} r="12" fill="none" stroke={landing.hit ? '#36a36b' : '#e0569a'} strokeWidth="3" strokeDasharray="4 3"/><text x={landing.x} y={landing.y - 16} fontSize="11" textAnchor="middle" fill="#773a70" fontWeight="bold">{landing.hit ? 'HIT! 🎯' : 'PLOP!'}</text></g>}
         {shot && <text x={shot.x} y={shot.y} textAnchor="middle" fontSize="24">💩</text>}
         {splat && <g><circle cx={splat.x} cy={splat.y} r="23" fill="#9d673e" opacity=".65"/><text x={splat.x} y={splat.y} textAnchor="middle" fontSize="33">💥</text><text x={splat.x} y={splat.y - 30} textAnchor="middle" fontSize="16" fontWeight="bold" fill="#78435b">{splat.hit ? 'SPLAT! 🎉' : 'PLOP!'}</text></g>}
         {aim && <text x={current.x} y={current.y - 52} textAnchor="middle" fontSize="13" fontWeight="bold" fill="#745078">Power {Math.round(aim.power / 145 * 100)}%</text>}
       </svg>
-      <p style={{ fontSize: 14, fontWeight: 700, margin: '8px 0', flexShrink: 0 }}>{winner !== null ? 'Hooray! Another round?' : reaction || (shot ? 'Here it comes!' : aim ? 'Release to throw! 💩' : 'Pull back and down • Release to throw 💩')}</p>
+      <p style={{ fontSize: 14, fontWeight: 700, margin: '8px 0', flexShrink: 0 }}>{winner !== null ? 'Hooray! Another round?' : reaction || (shot ? 'Here it comes!' : aim ? 'Release to throw! 💩' : 'Drag to aim • Release to throw 💩')}</p>
       {winner !== null && <button style={{ ...button, background: '#a76bca', color: 'white' }} onClick={reset}>Play again!</button>}
     </div>}
     {winner !== null && !setup && <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(#fff0ba,#f9d8f1,#dff5ff)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: 20, zIndex: 5, textAlign: 'center' }}>
