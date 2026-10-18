@@ -1,3 +1,4 @@
+import RoyalPoopBattle from './RoyalPoopBattle'
 import { useState, useRef, useCallback, useEffect } from 'react'
 
 // ─── Audio helpers (Web Audio API, no files needed) ─────────────────────────
@@ -2571,6 +2572,8 @@ export default function App() {
     setShowInstallTip(prev => !prev)
   }
 
+  if (screen === 'royal-poop') return <RoyalPoopBattle onBack={() => setScreen('home')} />
+
   if (screen === 'shapes') {
     return <ShapePlayground onBack={() => setScreen('home')} />
   }
@@ -2657,6 +2660,7 @@ export default function App() {
 
         <div style={s.toyGrid}>
           {[
+            { icon: '💩', label: 'Royal Poop Battle', screen: 'royal-poop' },
             { icon: '🔷', label: 'Shapes', screen: 'shapes' },
             { icon: '🌟', label: 'Patterns', screen: 'patterns' },
             { icon: '🔤', label: 'Letters', screen: 'letters' },
