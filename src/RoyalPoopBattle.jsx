@@ -149,13 +149,13 @@ export default function RoyalPoopBattle({ onBack }) {
   }).filter(p => p.y < GROUND && p.x >= 0 && p.x <= W) : []
 
   const button = { border: 0, borderRadius: 18, padding: '13px 18px', background: '#fff', color: '#65456d', fontWeight: 800, fontSize: 16, cursor: 'pointer' }
-  return <div style={{ minHeight: '100dvh', background: 'linear-gradient(#fff1fb,#e8f7ff)', fontFamily: 'Nunito, sans-serif', color: '#65456d', padding: '16px', boxSizing: 'border-box', textAlign: 'center' }}>
-    <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: 600, margin: 'auto' }}>
+  return <div style={{ height: '100dvh', overflow: 'hidden', display: 'flex', flexDirection: 'column', background: 'linear-gradient(#fff1fb,#e8f7ff)', fontFamily: 'Nunito, sans-serif', color: '#65456d', padding: '16px', boxSizing: 'border-box', textAlign: 'center' }}>
+    <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: 600, width: '100%', margin: '0 auto', flexShrink: 0 }}>
       <button onClick={onBack} style={button} aria-label="Back to games">←</button>
       <strong style={{ fontSize: 'clamp(19px, 5vw, 27px)' }}>💩 Royal Poop Battle</strong>
       <button onClick={() => { reset(); setSetup(true) }} style={button} aria-label="Choose characters again">↻</button>
     </header>
-    {setup ? <div style={{ maxWidth: 540, margin: '30px auto' }}>
+    {setup ? <div style={{ width: '100%', maxWidth: 540, margin: '16px auto 0', minHeight: 0, flex: 1, display: 'flex', flexDirection: 'column' }}><div style={{ overflowY: 'auto', minHeight: 0, flex: 1, padding: '0 4px 16px', WebkitOverflowScrolling: 'touch' }}>
       <h2>Choose your royal team!</h2>
       <h3>Daddy's Prince</h3>
       <div style={{ display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -165,7 +165,7 @@ export default function RoyalPoopBattle({ onBack }) {
       <div style={{ display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap' }}>
         {PRINCESSES.map((p, i) => <button key={p.name} onClick={() => setPrincess(i)} style={{ ...button, border: princess === i ? '3px solid #e97fae' : '3px solid transparent' }}><PrincessPortrait name={p.name} size={70}/><div>{p.name}</div></button>)}
       </div>
-      <button onClick={() => { reset(); setSetup(false) }} style={{ ...button, background: '#a76bca', color: 'white', marginTop: 30, padding: '17px 40px' }}>Let's play! ✨</button>
+      </div><div style={{ flexShrink: 0, padding: '12px 4px max(12px, env(safe-area-inset-bottom))', background: '#edf5ff' }}><button onClick={() => { reset(); setSetup(false) }} style={{ ...button, background: '#a76bca', color: 'white', width: '100%', padding: '17px 24px' }}>Let's play! ✨</button></div>
     </div> : <div style={{ maxWidth: 650, margin: '20px auto' }}>
       <h2 style={{ margin: '8px 0' }}>{winner !== null ? (winner === 0 ? 'Daddy wins! 🎉' : 'Aubrielle wins! 🎉') : (turn === 0 ? "Daddy's turn!" : "Aubrielle's turn!")}</h2>
       <div style={{ display: 'flex', justifyContent: 'space-around', fontSize: 17, fontWeight: 800, marginBottom: 12 }}><span>🤴 Daddy: {scores[0]} / 3</span><span>👸 Aubrielle: {scores[1]} / 3</span></div>
