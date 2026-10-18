@@ -196,7 +196,7 @@ export default function RoyalPoopBattle({ onBack }) {
   const cameraView = `${cameraX - 95} ${cameraY - 160} 190 320`
 
   const button = { border: 0, borderRadius: 18, padding: '13px 18px', background: '#fff', color: '#65456d', fontWeight: 800, fontSize: 16, cursor: 'pointer' }
-  return <div style={{ height: '100dvh', overflow: 'hidden', display: 'flex', flexDirection: 'column', background: 'linear-gradient(#fff1fb,#e8f7ff)', fontFamily: 'Nunito, sans-serif', color: '#65456d', padding: '16px', boxSizing: 'border-box', textAlign: 'center' }}>
+  return <div style={{ position: 'relative', height: '100dvh', overflow: 'hidden', display: 'flex', flexDirection: 'column', background: 'linear-gradient(#fff1fb,#e8f7ff)', fontFamily: 'Nunito, sans-serif', color: '#65456d', padding: '16px', boxSizing: 'border-box', textAlign: 'center' }}>
     <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: 600, width: '100%', margin: '0 auto', flexShrink: 0 }}>
       <button onClick={onBack} style={button} aria-label="Back to games">←</button>
       <strong style={{ fontSize: 'clamp(19px, 5vw, 27px)' }}>💩 Royal Poop Battle</strong>
@@ -239,6 +239,19 @@ export default function RoyalPoopBattle({ onBack }) {
       </svg>
       <p style={{ fontSize: 14, fontWeight: 700, margin: '8px 0', flexShrink: 0 }}>{winner !== null ? 'Hooray! Another round?' : shot || splat ? 'Here it comes!' : 'Drag on the field to aim, then let go to throw! 💩'}</p>
       {winner !== null && <button style={{ ...button, background: '#a76bca', color: 'white' }} onClick={reset}>Play again!</button>}
+    </div>}
+    {winner !== null && !setup && <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(#fff0ba,#f9d8f1,#dff5ff)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: 20, zIndex: 5, textAlign: 'center' }}>
+      <h1 style={{ fontSize: 'clamp(28px, 8vw, 44px)', margin: 0 }}>🏆 {winner === 0 ? 'Daddy' : 'Aubrielle'} wins!</h1>
+      <div style={{ fontSize: 26, fontWeight: 900 }}>{winner === 0 ? PRINCES[prince].name : PRINCESSES[princess].name}</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+        <span style={{ fontSize: 55, transform: 'rotate(-25deg)' }}>🙌</span>
+        {winner === 0 ? <DaddyPortrait name={PRINCES[prince].name} size={120}/> : <PrincessPortrait name={PRINCESSES[princess].name} size={120}/>}
+        <span style={{ fontSize: 55, transform: 'rotate(25deg)' }}>🙌</span>
+      </div>
+      <div style={{ fontSize: 70 }}>🥇</div>
+      <div style={{ fontSize: 22, fontWeight: 800 }}>Three splats! Royal champion! 🎉</div>
+      <button onClick={reset} style={{ ...button, background: '#a76bca', color: 'white', padding: '16px 36px' }}>Play again!</button>
+      <button onClick={() => { reset(); setSetup(true) }} style={button}>Choose characters</button>
     </div>}
   </div>
 }
