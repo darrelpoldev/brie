@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-const PRINCES = [{ name: 'Prince Charming', emoji: '🤴' }, { name: 'Royal Knight', emoji: '🫅' }, { name: 'King Daddy', emoji: '👑' }]
+const PRINCES = ['Beast', 'Olaf', 'Shrek'].map(name => ({ name }))
 const PRINCESSES = ['Elsa', 'Anna', 'Snow White', 'Cinderella', 'Rapunzel', 'Ariel', 'Belle'].map(name => ({ name }))
 // Lightweight original vector portraits: no image requests or third-party assets.
 const LOOKS = {
@@ -30,6 +30,40 @@ function PrincessPortrait({ name, size = 66 }) {
     <ellipse cx="58" cy="49" rx="2.3" ry="3" fill="#3d3440"/>
     <path d="M44 60 Q50 65 56 60" fill="none" stroke="#ba6c73" strokeWidth="2" strokeLinecap="round"/>
     <path d="M39 76 Q50 85 61 76" fill="none" stroke="#fff" strokeOpacity=".6" strokeWidth="2"/>
+  </svg>
+}
+
+// Compact original vector caricatures inspired by familiar fairy-tale characters.
+function DaddyPortrait({ name, size = 48 }) {
+  const snow = name === 'Olaf'
+  const ogre = name === 'Shrek'
+  const skin = snow ? '#fffdf7' : ogre ? '#9fc84c' : '#ae7446'
+  return <svg width={size} height={size} viewBox="0 0 100 100" role="img" aria-label={name} style={{ display: 'block', margin: 'auto' }}>
+    <circle cx="50" cy="50" r="48" fill={snow ? '#dff3ff' : ogre ? '#e9f4d6' : '#f7e7c7'}/>
+    {snow ? <>
+      <circle cx="50" cy="73" r="22" fill="#fff"/>
+      <circle cx="50" cy="37" r="22" fill="#fff"/>
+      <path d="M43 15 L38 5 M50 15 L52 3 M56 17 L65 7" stroke="#765338" strokeWidth="3" strokeLinecap="round"/>
+      <circle cx="42" cy="34" r="3.8" fill="#292929"/><circle cx="58" cy="34" r="3.8" fill="#292929"/>
+      <path d="M50 40 L73 46 L49 49Z" fill="#f28b28"/>
+      <path d="M40 53 Q50 60 61 52" stroke="#333" strokeWidth="3" fill="none"/>
+      <circle cx="50" cy="68" r="3" fill="#333"/><circle cx="50" cy="79" r="3" fill="#333"/>
+    </> : <>
+      {ogre ? <>
+        <path d="M29 39 L14 25 Q10 17 19 17 L36 28 M71 39 L86 25 Q90 17 81 17 L64 28" fill={skin} stroke="#789c39" strokeWidth="3"/>
+        <path d="M26 77 L22 100 H78 L74 77Z" fill="#74513c"/>
+        <path d="M32 79 L43 92 L57 92 L68 79" fill="#f2e6c8"/>
+      </> : <>
+        <path d="M24 78 L16 100 H84 L76 78Z" fill="#375f93"/>
+        <path d="M26 31 L18 13 L38 24 M74 31 L82 13 L62 24" fill="#79502c" stroke="#5d3925" strokeWidth="3"/>
+        <path d="M24 29 Q15 13 35 15 L50 22 Q65 9 78 27" fill="#70482a"/>
+      </>}
+      <ellipse cx="50" cy="52" rx="27" ry="31" fill={skin}/>
+      {ogre ? <><ellipse cx="35" cy="54" rx="9" ry="6" fill="#88b33f"/><ellipse cx="65" cy="54" rx="9" ry="6" fill="#88b33f"/></> : <ellipse cx="50" cy="61" rx="13" ry="9" fill="#d49a69"/>}
+      <circle cx="40" cy="46" r="3.5" fill="#27212a"/><circle cx="60" cy="46" r="3.5" fill="#27212a"/>
+      <path d="M41 69 Q50 75 59 69" stroke="#54372e" strokeWidth="3" fill="none" strokeLinecap="round"/>
+      {!ogre && <path d="M26 35 Q50 20 74 35" fill="none" stroke="#70482a" strokeWidth="9" strokeLinecap="round"/>}
+    </>}
   </svg>
 }
 
@@ -155,17 +189,25 @@ export default function RoyalPoopBattle({ onBack }) {
       <strong style={{ fontSize: 'clamp(19px, 5vw, 27px)' }}>💩 Royal Poop Battle</strong>
       <button onClick={() => { reset(); setSetup(true) }} style={button} aria-label="Choose characters again">↻</button>
     </header>
-    {setup ? <div style={{ width: '100%', maxWidth: 540, margin: '16px auto 0', minHeight: 0, flex: 1, display: 'flex', flexDirection: 'column' }}><div style={{ overflowY: 'auto', minHeight: 0, flex: 1, padding: '0 4px 16px', WebkitOverflowScrolling: 'touch' }}>
-      <h2>Choose your royal team!</h2>
-      <h3>Daddy's Prince</h3>
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap' }}>
-        {PRINCES.map((p, i) => <button key={p.name} onClick={() => setPrince(i)} style={{ ...button, border: prince === i ? '3px solid #9c67cc' : '3px solid transparent' }}><span style={{ fontSize: 32 }}>{p.emoji}</span><div>{p.name}</div></button>)}
+    {setup ? <div style={{ width: '100%', maxWidth: 540, margin: '6px auto 0', minHeight: 0, flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ overflowY: 'auto', minHeight: 0, flex: 1, padding: '0 2px 6px', WebkitOverflowScrolling: 'touch' }}>
+        <h2 style={{ fontSize: 18, margin: '5px 0 7px' }}>Choose your team!</h2>
+        <h3 style={{ fontSize: 15, margin: '7px 0 5px' }}>Daddy's character</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 6 }}>
+          {PRINCES.map((p, i) => <button key={p.name} onClick={() => setPrince(i)} aria-pressed={prince === i} style={{ ...button, minWidth: 0, padding: '6px 2px', borderRadius: 12, border: prince === i ? '3px solid #9c67cc' : '3px solid transparent', fontSize: 12 }}>
+            <DaddyPortrait name={p.name} size={46}/><div>{p.name}</div>
+          </button>)}
+        </div>
+        <h3 style={{ fontSize: 15, margin: '9px 0 5px' }}>Aubrielle's princess</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 6 }}>
+          {PRINCESSES.map((p, i) => <button key={p.name} onClick={() => setPrincess(i)} aria-pressed={princess === i} style={{ ...button, minWidth: 0, padding: '6px 1px', borderRadius: 12, border: princess === i ? '3px solid #e97fae' : '3px solid transparent', fontSize: 10, overflowWrap: 'anywhere' }}>
+            <PrincessPortrait name={p.name} size={43}/><div>{p.name}</div>
+          </button>)}
+        </div>
       </div>
-      <h3>Aubrielle's Princess</h3>
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap' }}>
-        {PRINCESSES.map((p, i) => <button key={p.name} onClick={() => setPrincess(i)} style={{ ...button, border: princess === i ? '3px solid #e97fae' : '3px solid transparent' }}><PrincessPortrait name={p.name} size={70}/><div>{p.name}</div></button>)}
+      <div style={{ flexShrink: 0, padding: '8px 2px max(8px, env(safe-area-inset-bottom))' }}>
+        <button onClick={() => { reset(); setSetup(false) }} style={{ ...button, background: '#a76bca', color: 'white', width: '100%', padding: '12px 20px' }}>Let's play! ✨</button>
       </div>
-      </div><div style={{ flexShrink: 0, padding: '12px 4px max(12px, env(safe-area-inset-bottom))', background: '#edf5ff' }}><button onClick={() => { reset(); setSetup(false) }} style={{ ...button, background: '#a76bca', color: 'white', width: '100%', padding: '17px 24px' }}>Let's play! ✨</button></div>
     </div> : <div style={{ maxWidth: 650, margin: '20px auto' }}>
       <h2 style={{ margin: '8px 0' }}>{winner !== null ? (winner === 0 ? 'Daddy wins! 🎉' : 'Aubrielle wins! 🎉') : (turn === 0 ? "Daddy's turn!" : "Aubrielle's turn!")}</h2>
       <div style={{ display: 'flex', justifyContent: 'space-around', fontSize: 17, fontWeight: 800, marginBottom: 12 }}><span>🤴 Daddy: {scores[0]} / 3</span><span>👸 Aubrielle: {scores[1]} / 3</span></div>
@@ -174,7 +216,7 @@ export default function RoyalPoopBattle({ onBack }) {
         <path d="M0 172 Q85 115 175 166 Q267 115 360 166 V240 H0Z" fill="#9ddc91" />
         <path d="M0 194 Q100 165 180 190 Q290 158 360 190 V240 H0Z" fill="#75c67b" />
         <rect y={GROUND} width={W} height={H - GROUND} fill="#6cbf75" />
-        <text x="54" y="191" fontSize="43" textAnchor="middle">{PRINCES[prince].emoji}</text>
+        <foreignObject x="26" y="137" width="56" height="56"><DaddyPortrait name={PRINCES[prince].name} size={56}/></foreignObject>
         <foreignObject x="278" y="137" width="56" height="56"><PrincessPortrait name={PRINCESSES[princess].name} size={56}/></foreignObject>
         {trajectory.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r="3.2" fill="#fff" opacity={0.9 - i * 0.04} />)}
         {shot && <text x={shot.x} y={shot.y} textAnchor="middle" fontSize="24">💩</text>}
