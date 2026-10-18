@@ -87,6 +87,8 @@ export default function RoyalPoopBattle({ onBack }) {
   const dragRef = useRef(null)
   const animationRef = useRef(null)
   const timeoutRef = useRef(null)
+  const audioRef = useRef(null)
+  const [reaction, setReaction] = useState(null)
   const current = POSITIONS[turn]
   const target = POSITIONS[1 - turn]
 
@@ -135,6 +137,26 @@ export default function RoyalPoopBattle({ onBack }) {
     launch(v)
   }
 
+  function sound(success) {
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext
+      if (!Ctx) return
+      const ctx = audioRef.current || (audioRef.current = new Ctx())
+      if (ctx.state === 'suspended') ctx.resume()
+      const oscillator = ctx.createOscillator()
+      const gain = ctx.createGain()
+      oscillator.type = success ? 'triangle' : 'sine'
+      oscillator.frequency.setValueAtTime(success ? 520 : 210, ctx.currentTime)
+      oscillator.frequency.exponentialRampToValueAtTime(success ? 850 : 100, ctx.currentTime + 0.2)
+      gain.gain.setValueAtTime(0.07, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25)
+      oscillator.connect(gain)
+      gain.connect(ctx.destination)
+      oscillator.start()
+      oscillator.stop(ctx.currentTime + 0.25)
+    } catch { /* Audio is optional */ }
+  }
+
   function launch({ vx, vy }) {
     setImpactCamera(null)
     const start = { x: current.x, y: current.y - 27 }
@@ -143,8 +165,10 @@ export default function RoyalPoopBattle({ onBack }) {
       const t = Math.min((now - startTime) / 1000, 4)
       const x = start.x + vx * t
       const y = start.y + vy * t + GRAVITY * t * t / 2
-      const hit = Math.hypot(x - target.x, y - (target.y - 22)) < 35
+      const hit = Math.hypot(x - target.x, y - (target.y - 22)) < 44
       if (hit || y >= GROUND - 6 || x < -15 || x > W + 15) {
+        sound(hit)
+        setReaction(hit ? 'SPLAT! 🎉' : 'PLOP!')
         setShot(null)
         setImpactCamera({ x: clamp(x, 0, W), y: clamp(y, -75, GROUND) })
         setSplat({ x: clamp(x, 15, W - 15), y: clamp(y, 25, GROUND), hit })
@@ -158,6 +182,7 @@ export default function RoyalPoopBattle({ onBack }) {
         }
         timeoutRef.current = setTimeout(() => {
           setSplat(null)
+          setReaction(null)
           setImpactCamera(null)
           if (!hit || scores[turn] < 2) setTurn(t => 1 - t)
         }, 1000)
@@ -178,13 +203,14 @@ export default function RoyalPoopBattle({ onBack }) {
     setShot(null)
     setImpactCamera(null)
     setSplat(null)
+    setReaction(null)
     setScores(initialScores())
     setTurn(0)
     setWinner(null)
   }
 
-  const trajectory = aim ? Array.from({ length: 14 }, (_, i) => {
-    const t = i * 0.105
+  const trajectory = aim ? Array.from({ length: 23 }, (_, i) => {
+    const t = i * 0.07
     return { x: current.x + aim.vx * t, y: current.y - 27 + aim.vy * t + GRAVITY * t * t / 2 }
   }).filter(p => p.y < GROUND && p.x >= 0 && p.x <= W) : []
 
@@ -192,7 +218,7 @@ export default function RoyalPoopBattle({ onBack }) {
   // Camera coordinates affect presentation only; projectile physics remain in world space.
   const focus = shot || impactCamera || { x: current.x, y: current.y - 32 }
   const cameraX = clamp(focus.x, 95, W - 95)
-  const cameraY = clamp(focus.y - 32, 45, 90)
+  const cameraY = shot ? clamp(focus.y + 35, 80, 125) : impactCamera ? 110 : 105
   const cameraView = `${cameraX - 95} ${cameraY - 160} 190 320`
 
   const button = { border: 0, borderRadius: 18, padding: '13px 18px', background: '#fff', color: '#65456d', fontWeight: 800, fontSize: 16, cursor: 'pointer' }
@@ -227,17 +253,30 @@ export default function RoyalPoopBattle({ onBack }) {
       <svg ref={stageRef} viewBox={cameraView} preserveAspectRatio="none" role="img" aria-label="Royal poop battle playfield. Drag to aim and release to throw." onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={finishDrag} onPointerCancel={() => { dragRef.current = null; setAim(null) }} style={{ width: '100%', flex: 1, minHeight: 0, borderRadius: 22, touchAction: 'none', background: '#c9eeff', boxShadow: '0 8px 25px #8b75a033', userSelect: 'none' }}>
         <rect x="-200" y="-300" width="800" height="500" fill="#c9eeff" />
         <circle cx="295" cy="39" r="22" fill="#ffe68a" />
+        <g fill="#fff" opacity=".86">
+          <ellipse cx="70" cy="-38" rx="30" ry="12"/><ellipse cx="53" cy="-46" rx="18" ry="13"/><ellipse cx="87" cy="-47" rx="20" ry="13"/>
+          <ellipse cx="248" cy="-77" rx="27" ry="11"/><ellipse cx="230" cy="-83" rx="16" ry="13"/>
+        </g>
+        <path d="M155 166 V119 L164 119 V109 L172 119 V98 L184 98 V119 L195 109 V119 H206 V166Z" fill="#d8b4e9" opacity=".7"/>
+        <path d="M169 98 L178 86 L187 98Z" fill="#b28acb"/>
+        <path d="M25 173 L25 142 L34 142 L34 135 L43 142 L43 173Z" fill="#b8d6c7"/>
+        <g fill="#fff4b3"><circle cx="103" cy="185" r="3"/><circle cx="218" cy="184" r="3"/><circle cx="337" cy="190" r="3"/></g>
+        <g fill="#f49ac1"><circle cx="100" cy="183" r="2"/><circle cx="215" cy="182" r="2"/><circle cx="334" cy="188" r="2"/></g>
         <path d="M0 172 Q85 115 175 166 Q267 115 360 166 V240 H0Z" fill="#9ddc91" />
         <path d="M0 194 Q100 165 180 190 Q290 158 360 190 V240 H0Z" fill="#75c67b" />
         <rect x="-200" y={GROUND} width="800" height="220" fill="#6cbf75" />
         <foreignObject x="26" y="137" width="56" height="56"><DaddyPortrait name={PRINCES[prince].name} size={56}/></foreignObject>
         <foreignObject x="278" y="137" width="56" height="56"><PrincessPortrait name={PRINCESSES[princess].name} size={56}/></foreignObject>
-        {trajectory.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r="3.2" fill="#fff" opacity={0.9 - i * 0.04} />)}
+        {trajectory.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r="2.6" fill="#fff" stroke="#9c67cc" strokeWidth=".4" opacity={0.95 - i * 0.025} />)}
+        {aim && <g><text x={current.x + (turn === 0 ? 24 : -24)} y={current.y - 34} fontSize="19" textAnchor="middle">💩</text>
+          <rect x={current.x - 28} y={current.y - 68} width="56" height="7" rx="3.5" fill="#fff" opacity=".9"/>
+          <rect x={current.x - 28} y={current.y - 68} width={56 * aim.power / 145} height="7" rx="3.5" fill="#b66ac5"/>
+        </g>}
         {shot && <text x={shot.x} y={shot.y} textAnchor="middle" fontSize="24">💩</text>}
-        {splat && <g><text x={splat.x} y={splat.y} textAnchor="middle" fontSize="33">💥</text><text x={splat.x} y={splat.y - 30} textAnchor="middle" fontSize="16" fontWeight="bold" fill="#78435b">{splat.hit ? 'SPLAT! 🎉' : 'PLOP!'}</text></g>}
+        {splat && <g><circle cx={splat.x} cy={splat.y} r="23" fill="#9d673e" opacity=".65"/><text x={splat.x} y={splat.y} textAnchor="middle" fontSize="33">💥</text><text x={splat.x} y={splat.y - 30} textAnchor="middle" fontSize="16" fontWeight="bold" fill="#78435b">{splat.hit ? 'SPLAT! 🎉' : 'PLOP!'}</text></g>}
         {aim && <text x={current.x} y={current.y - 52} textAnchor="middle" fontSize="13" fontWeight="bold" fill="#745078">Power {Math.round(aim.power / 145 * 100)}%</text>}
       </svg>
-      <p style={{ fontSize: 14, fontWeight: 700, margin: '8px 0', flexShrink: 0 }}>{winner !== null ? 'Hooray! Another round?' : shot || splat ? 'Here it comes!' : 'Drag on the field to aim, then let go to throw! 💩'}</p>
+      <p style={{ fontSize: 14, fontWeight: 700, margin: '8px 0', flexShrink: 0 }}>{winner !== null ? 'Hooray! Another round?' : reaction || (shot ? 'Here it comes!' : aim ? 'Release to throw! 💩' : 'Drag to aim • Release to throw 💩')}</p>
       {winner !== null && <button style={{ ...button, background: '#a76bca', color: 'white' }} onClick={reset}>Play again!</button>}
     </div>}
     {winner !== null && !setup && <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(#fff0ba,#f9d8f1,#dff5ff)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: 20, zIndex: 5, textAlign: 'center' }}>
