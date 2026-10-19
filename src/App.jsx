@@ -1,4 +1,6 @@
 import RoyalPoopBattle from './RoyalPoopBattle'
+import { lazy, Suspense } from 'react'
+const RoyalPoopBattle3D = lazy(() => import('./RoyalPoopBattle3D'))
 import { useState, useRef, useCallback, useEffect } from 'react'
 
 // ─── Audio helpers (Web Audio API, no files needed) ─────────────────────────
@@ -2572,6 +2574,7 @@ export default function App() {
     setShowInstallTip(prev => !prev)
   }
 
+  if (screen === 'royal-poop-3d') return <Suspense fallback={<div style={{ padding: 32 }}>Loading 3D game…</div>}><RoyalPoopBattle3D onBack={() => setScreen('home')} /></Suspense>
   if (screen === 'royal-poop') return <RoyalPoopBattle onBack={() => setScreen('home')} />
 
   if (screen === 'shapes') {
@@ -2661,6 +2664,7 @@ export default function App() {
         <div style={s.toyGrid}>
           {[
             { icon: '💩', label: 'Royal Poop Battle', screen: 'royal-poop' },
+            { icon: '🏰', label: 'Royal Battle 3D (Preview)', screen: 'royal-poop-3d' },
             { icon: '🔷', label: 'Shapes', screen: 'shapes' },
             { icon: '🌟', label: 'Patterns', screen: 'patterns' },
             { icon: '🔤', label: 'Letters', screen: 'letters' },
