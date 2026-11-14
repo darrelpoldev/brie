@@ -28,6 +28,9 @@ function buildHouse(stations, makeProp) {
     if (index === 0) {
       block(room, '#a77253', [0, -.67, -.31], [2.32, 1.16, .7])
       block(room, '#fff1d0', [0, -.07, .04], [2.52, .18, 1])
+      block(room, '#8d674c', [1.77, -1.02, .02], [1.08, 1.15, .18])
+      block(room, '#e6aa69', [1.77, -1.45, .36], [1.14, .18, .81])
+      for (const x of [1.33, 2.21]) block(room, '#956949', [x, -1.73, .5], [.16, .52, .16])
     }
     for (const [x, y, shade] of [[-1.85, 1.55, '#f4ca88'], [-1.02, 1.27, '#e5918b']]) {
       if (index === 4) continue
@@ -57,7 +60,7 @@ function buildHouse(stations, makeProp) {
   return house
 }
 
-function Puppet({ model, destination, action, station }) {
+function Puppet({ model, destination, action, station, sitting, held }) {
   const ref = useRef(null)
   const started = useRef(null)
   const origin = useRef([destination.x, destination.y, .9])
@@ -67,7 +70,7 @@ function Puppet({ model, destination, action, station }) {
   useEffect(() => {
     started.current = null
     invalidate()
-  }, [action, destination.x, destination.y, invalidate])
+  }, [action, destination.x, destination.y, held, sitting, invalidate])
   useFrame(({ clock, invalidate: redraw }, delta) => {
     const puppet = ref.current
     const drift = destination.x - puppet.position.x
@@ -79,7 +82,8 @@ function Puppet({ model, destination, action, station }) {
     puppet.position.x += drift * step
     puppet.position.y += (destination.y + bounce * (station === 4 ? 1.65 : .45) - puppet.position.y) * step
     puppet.rotation.z = bounce * (station === 0 ? .21 : -.09)
-    puppet.scale.y = station === 1 ? .45 : .59
+    puppet.scale.y = sitting || station === 1 ? .45 : .59
+    puppet.visible = !held
     effect.current.visible = Boolean(action && elapsed < .9)
     effect.current.position.y = .45 + Math.min(elapsed, .9) * .62
     effect.current.scale.setScalar(Math.max(.02, 1 - elapsed))
@@ -97,7 +101,7 @@ function Puppet({ model, destination, action, station }) {
   </group>
 }
 
-export default function FamilyScene({ stations, family, places, makeCharacter, makeProp, feedback }) {
+export default function FamilyScene({ stations, family, places, makeCharacter, makeProp, feedback, seated, carrying }) {
   const scenery = useMemo(() => buildHouse(stations, makeProp), [stations, makeProp])
   const dolls = useMemo(() => family.map(member => makeCharacter(member.warm, member.adult)), [family, makeCharacter])
   const halfWidth = stations.length * roomWidth / 2
@@ -107,8 +111,8 @@ export default function FamilyScene({ stations, family, places, makeCharacter, m
     <hemisphereLight args={['#fff4e1', '#b2abd0', 2.05]} />
     <directionalLight position={[-4, 7, 7]} color="#fff3dc" intensity={2.55} />
     <primitive object={scenery} />
-    {places.map((station, index) => station === null ? null : <Puppet key={index} model={dolls[index]} station={station}
-      destination={{ x: station * roomWidth + (index - 1.5) * 1.19, y: station === 4 ? -1.42 : -1.79 }}
+    {places.map((station, index) => station === null ? null : <Puppet key={index} model={dolls[index]} station={station} sitting={seated === index} held={carrying?.member === index}
+      destination={{ x: station * roomWidth + (seated === index ? 1.77 : (index - 1.5) * 1.19), y: seated === index ? -1.29 : station === 4 ? -1.42 : -1.79 }}
       action={feedback?.member === index ? feedback.repeat : 0} />)}
   </Canvas>
 }

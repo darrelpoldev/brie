@@ -103,6 +103,7 @@ function CharacterArt({ member, makeCharacter, size }) {
 export default function FamilyPlay({ makeCharacter, onBack }) {
   const [selected, setSelected] = useState(0)
   const [places, setPlaces] = useState([0, 2, 4, 1])
+  const [seated, setSeated] = useState(null)
   const [feedback, setFeedback] = useState(null)
   const [showChallenges, setShowChallenges] = useState(false)
   const [stars, setStars] = useState([])
@@ -110,6 +111,7 @@ export default function FamilyPlay({ makeCharacter, onBack }) {
   const house = useRef(null)
   const drag = useRef(null)
   const frame = useRef(null)
+  const handledDrag = useRef(false)
   const audio = useRef(null)
 
   useEffect(() => () => {
@@ -136,6 +138,7 @@ export default function FamilyPlay({ makeCharacter, onBack }) {
   }
 
   function act(member, station) {
+    if (station !== 0 && seated === member) setSeated(null)
     setSelected(member)
     setPlaces(previous => previous.map((place, index) => index === member ? station : place))
     setFeedback(previous => ({ member, station, repeat: (previous?.repeat ?? 0) + 1 }))
@@ -148,7 +151,7 @@ export default function FamilyPlay({ makeCharacter, onBack }) {
 
   function autoScroll() {
     const current = drag.current
-    if (!current?.moving) return
+    if (!current?.moving || current.member === null) return
     const bounds = house.current.getBoundingClientRect()
     if (current.y >= bounds.top && current.y <= bounds.bottom) {
       if (current.x > bounds.right - 48) house.current.scrollLeft += 8
@@ -159,6 +162,7 @@ export default function FamilyPlay({ makeCharacter, onBack }) {
 
   function startDrag(event, member) {
     if (!event.isPrimary || event.button !== 0) return
+    handledDrag.current = false
     drag.current = { member, id: event.pointerId, x: event.clientX, y: event.clientY, startX: event.clientX, startY: event.clientY }
     event.currentTarget.setPointerCapture(event.pointerId)
   }
@@ -183,14 +187,42 @@ export default function FamilyPlay({ makeCharacter, onBack }) {
     cancelAnimationFrame(frame.current)
     setCarrying(null)
     if (canceled || !current.moving) return
-    const target = document.elementFromPoint(event.clientX, event.clientY)?.closest('[data-play-station]')
-    if (target && house.current.contains(target)) act(current.member, Number(target.dataset.playStation))
+    handledDrag.current = true
+    const hit = document.elementFromPoint(event.clientX, event.clientY)
+    const target = hit?.closest('[data-play-station]')
+    if (!target || !house.current.contains(target)) return
+    const station = Number(target.dataset.playStation)
+    if (current.member === null) {
+      const recipient = hit.closest('[data-family-member]')
+      if (station === 0 && recipient) act(Number(recipient.dataset.familyMember), 0)
+      return
+    }
+    if (station === 0) {
+      if (hit.closest('[data-kitchen-chair]')) sit(current.member)
+      else {
+        if (seated === current.member) setSeated(null)
+        setPlaces(previous => previous.map((place, index) => index === current.member ? 0 : place))
+        setSelected(current.member)
+        setFeedback(null)
+      }
+      return
+    }
+    act(current.member, station)
+  }
+
+  function sit(member) {
+    setSelected(member)
+    setSeated(member)
+    setPlaces(previous => previous.map((place, index) => index === member ? 0 : place))
+    setFeedback(null)
+    play([392, 523])
   }
 
   function character(member, index, inRoom = false) {
     return <button type="button" key={member.name} className={inRoom ? 'family-puppet family-in-room' : 'family-puppet'}
       aria-label={inRoom ? `Move ${member.name} from ${stations[places[index]].room}` : member.name}
-      aria-pressed={index === selected} onClick={() => setSelected(index)}
+      data-family-member={inRoom ? index : undefined}
+      aria-pressed={index === selected} onClick={() => { if (!handledDrag.current) setSelected(index); handledDrag.current = false }}
       onPointerDown={event => startDrag(event, index)} onPointerMove={moveDrag}
       onPointerUp={event => finishDrag(event)} onPointerCancel={event => finishDrag(event, true)}>
       <CharacterArt member={member} makeCharacter={makeCharacter} size={66} />
@@ -202,27 +234,34 @@ export default function FamilyPlay({ makeCharacter, onBack }) {
     <div className="bluey-shell">
       <header className="bluey-nav"><button type="button" aria-label="Back to Bluey" onClick={onBack}>←</button><strong>Bluey</strong></header>
       <h1>Play House</h1>
-      <p className="family-prompt">Tap a toy. Swipe to explore.</p>
+      <p className="family-prompt">Drag the apple to feed Bluey. Swipe to explore.</p>
       <div className="family-cast" aria-label="Choose a character">{family.map((member, index) => character(member, index))}</div>
       <div className="family-house" ref={house} tabIndex={0} role="region" aria-label="Play House. Scroll sideways to explore.">
         <div className="family-world">
           <div className="family-live-scene">
             <FamilyScene stations={stations} family={family} places={places} makeCharacter={makeCharacter}
-              makeProp={activityModel} feedback={feedback} />
+              makeProp={activityModel} feedback={feedback} seated={seated} carrying={carrying} />
           </div>
         {stations.map((station, index) => <section className="family-room" key={station.name}
           data-play-station={index} aria-label={station.room} style={{ '--room-color': station.color }}>
           <h2>{station.room}</h2>
-          <button type="button" className="family-activity" aria-label={station.action} onClick={() => {
+          <button type="button" className={index === 0 ? 'family-activity family-food' : 'family-activity'} aria-label={index === 0 ? 'Apple. Drag to feed a character' : station.action}
+            onPointerDown={index === 0 ? event => startDrag(event, null) : undefined}
+            onPointerMove={index === 0 ? moveDrag : undefined}
+            onPointerUp={index === 0 ? event => finishDrag(event) : undefined}
+            onPointerCancel={index === 0 ? event => finishDrag(event, true) : undefined} onClick={() => {
+            if (index === 0 && handledDrag.current) { handledDrag.current = false; return }
             const occupant = places.indexOf(index)
-            act(places[selected] === index || occupant === -1 ? selected : occupant, index)
+            act(index === 0 && seated !== null ? seated : places[selected] === index || occupant === -1 ? selected : occupant, index)
           }}>
             <RenderedToy artKey={`family-station:${index}`} makeModel={() => activityModel(index)} fallback={station.icon} size={126} />
-            <span>{station.name}</span>
+            <span>{index === 0 ? 'Apple' : station.name}</span>
           </button>
+          {index === 0 && <button type="button" className="family-chair" data-kitchen-chair
+            aria-label="Chair. Drag a character here to sit" onClick={() => sit(selected)}><span>Chair</span></button>}
           <div className="family-room-cast">
             {family.map((member, memberIndex) => places[memberIndex] === index && <div
-              className={`family-pose family-pose-${index}`} style={{ gridColumn: memberIndex + 1 }}
+              className={`family-pose family-pose-${index}${index === 0 && seated === memberIndex ? ' family-seated' : ''}`} style={{ gridColumn: memberIndex + 1 }}
               key={`${member.name}:${feedback?.member === memberIndex ? feedback.repeat : ''}`}>
               {character(member, memberIndex, true)}
               {feedback?.member === memberIndex && feedback.station === index && <span className="family-reaction" aria-hidden="true">{station.icon}</span>}
@@ -239,7 +278,7 @@ export default function FamilyPlay({ makeCharacter, onBack }) {
       </div>
       <p role="status" className="family-status">{feedback
         ? `${family[feedback.member].name} ${stations[feedback.station].reaction}`
-        : ''}</p>
+        : seated === null ? '' : `${family[seated].name} is sitting!`}</p>
       <button type="button" className="family-find-stars" aria-pressed={showChallenges}
         onClick={() => setShowChallenges(!showChallenges)}>
         {showChallenges ? 'Hide star challenges' : '☆ Find stars'}
@@ -247,7 +286,9 @@ export default function FamilyPlay({ makeCharacter, onBack }) {
       {showChallenges && <p className="family-stars" aria-live="polite">{stars.length === stations.length
         ? '★ You found all five stars!' : `★ ${stars.length} / ${stations.length} stars`}</p>}
       {carrying && <div className="family-carry" style={{ left: carrying.x, top: carrying.y }} aria-hidden="true">
-        <CharacterArt member={family[carrying.member]} makeCharacter={makeCharacter} size={80} />
+        {carrying.member === null
+          ? <RenderedToy artKey="family-station:0" makeModel={() => activityModel(0)} fallback="🍎" size={65} />
+          : <CharacterArt member={family[carrying.member]} makeCharacter={makeCharacter} size={80} />}
       </div>}
     </div>
   </main>
