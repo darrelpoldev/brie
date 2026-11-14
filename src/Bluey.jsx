@@ -1,3 +1,4 @@
+import FamilyPlay from './FamilyPlay'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Group, Mesh, MeshStandardMaterial } from 'three'
@@ -36,10 +37,10 @@ function brick(group, color, position, size, tilt = 0) {
   group.add(piece)
 }
 
-function pupModel(bingo = false) {
+export function pupModel(bingo = false, adult = false) {
   const pup = new Group()
-  const dark = bingo ? '#ad522d' : '#304b85'
-  const base = bingo ? '#efa356' : '#639dd7'
+  const dark = bingo ? (adult ? '#984b31' : '#ad522d') : (adult ? '#253862' : '#304b85')
+  const base = bingo ? (adult ? '#d98959' : '#efa356') : (adult ? '#487eae' : '#639dd7')
   const light = bingo ? '#ffcc83' : '#a4d2ef'
   const cream = '#ffecd0'
 
@@ -68,6 +69,7 @@ function pupModel(bingo = false) {
   ball(pup, '#283449', [.192, .153, .683], [.161, .093, .09])
   ball(pup, '#514254', [.1, -.023, .678], [.146, .064, .03])
   ball(pup, '#f3a89d', [.137, -.048, .697], [.074, .027, .012])
+  if (adult) pup.scale.set(1.12, 1.26, 1.1)
   return pup
 }
 
@@ -237,6 +239,7 @@ function hideFriend(previousRoom) {
 }
 
 export default function Bluey({ onBack }) {
+  const [freePlay, setFreePlay] = useState(false)
   const [playing, setPlaying] = useState(false)
   const [hiding, setHiding] = useState(() => hideFriend(0))
   const [roomIndex, setRoomIndex] = useState(0)
@@ -336,6 +339,8 @@ export default function Bluey({ onBack }) {
       ? rightRoom ? 'Look! Someone’s peeking out.' : `I hear a giggle in the ${rooms[hiding.room].name.toLowerCase()}!`
       : `Help ${seeker} find ${friend}.`
 
+  if (freePlay) return <FamilyPlay makeCharacter={pupModel} onBack={() => setFreePlay(false)} />
+
   return <main className="bluey-page">
     <div className="bluey-shell">
       <header className="bluey-nav">
@@ -401,7 +406,10 @@ export default function Bluey({ onBack }) {
         <div className="bluey-character"><BlueyArt size={184} /></div>
         <h1>Hide &amp; Seek</h1>
         <p>Bingo is hiding somewhere in the house.</p>
-        <button className="bluey-primary" type="button" ref={startRef} onClick={start}>Find Bingo</button>
+        <div className="bluey-mode-buttons">
+          <button className="bluey-primary" type="button" onClick={() => setFreePlay(true)}>Play House</button>
+          <button className="bluey-primary" type="button" ref={startRef} onClick={start}>Find Bingo</button>
+        </div>
       </section>}
     </div>
   </main>
