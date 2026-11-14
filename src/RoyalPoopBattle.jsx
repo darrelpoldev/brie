@@ -228,10 +228,10 @@ export default function RoyalPoopBattle({ onBack }) {
     y: shot ? clamp(focus.y + 35, 80, 125) : impactCamera ? 110 : 105
   }
   const button = { border: 0, borderRadius: 18, padding: '13px 18px', background: '#fff', color: '#65456d', fontWeight: 800, fontSize: 16, cursor: 'pointer' }
-  return <div style={{ position: 'relative', height: '100dvh', overflow: 'hidden', display: 'flex', flexDirection: 'column', background: 'linear-gradient(#faf0fb,#e5f2ee)', fontFamily: 'Nunito, sans-serif', color: '#65456d', padding: '16px', boxSizing: 'border-box', textAlign: 'center' }}>
+  return <div style={{ position: 'relative', height: '100dvh', overflow: 'hidden', display: 'flex', flexDirection: 'column', background: 'linear-gradient(#faf0fb,#e5f2ee)', fontFamily: 'Nunito Variable, sans-serif', color: '#65456d', padding: '16px', boxSizing: 'border-box', textAlign: 'center' }}>
     <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: 600, width: '100%', margin: '0 auto', flexShrink: 0 }}>
       <button onClick={onBack} style={button} aria-label="Back to games">←</button>
-      <strong style={{ fontSize: 'clamp(19px, 5vw, 27px)' }}>💩 Royal Poop Battle</strong>
+      <strong style={{ fontSize: 'clamp(19px, 5vw, 27px)' }}>Royal Poop Battle</strong>
       <button onClick={() => { reset(); setSetup(true) }} style={button} aria-label="Choose characters again">↻</button>
     </header>
     {setup ? <div style={{ width: '100%', maxWidth: 540, margin: '6px auto 0', minHeight: 0, flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -255,9 +255,13 @@ export default function RoyalPoopBattle({ onBack }) {
       </div>
     </div> : <div style={{ width: '100%', maxWidth: 650, margin: '6px auto 0', minHeight: 0, flex: 1, display: 'flex', flexDirection: 'column' }}>
       <h2 style={{ margin: '8px 0' }}>{winner !== null ? (winner === 0 ? 'Daddy wins! 🎉' : 'Aubrielle wins! 🎉') : (turn === 0 ? "Daddy's turn!" : "Aubrielle's turn!")}</h2>
-      <div style={{ display: 'flex', justifyContent: 'space-around', fontSize: 15, fontWeight: 800, marginBottom: 9 }}>
-        <span>Daddy {Array.from({ length: 3 }, (_, i) => i < scores[0] ? '💩' : '☆').join(' ')}</span>
-        <span>Aubrielle {Array.from({ length: 3 }, (_, i) => i < scores[1] ? '💩' : '☆').join(' ')}</span>
+      <div className="battle-scores">
+        {[['Daddy', PRINCES[prince].name], ['Aubrielle', PRINCESSES[princess].name]].map(([player, character], index) =>
+          <div key={player} className={`battle-score${turn === index ? ' active' : ''}`}>
+            <Portrait name={character} size={38} />
+            <span>{player}<small aria-label={`${scores[index]} of 3 hits`}>{'★'.repeat(scores[index])}{'☆'.repeat(3 - scores[index])}</small></span>
+          </div>
+        )}
       </div>
       <div ref={stageRef} className="battle-stage" role="img"
         aria-label="Royal Poop Battle playfield. Drag to aim and release to throw."

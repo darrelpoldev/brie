@@ -480,7 +480,7 @@ const globalStyles = `
   }
 
   body {
-    font-family: 'Nunito', sans-serif;
+    font-family: 'Nunito Variable', sans-serif;
     background: linear-gradient(145deg, #FEF3E8 0%, #FDE8D8 50%, #E8F0FE 100%);
     color: #5D4E6D;
     -webkit-tap-highlight-color: transparent;

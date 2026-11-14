@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 
-const sphere = new THREE.SphereGeometry(1, 24, 16)
+const sphere = new THREE.SphereGeometry(1, 32, 24)
 const box = new THREE.BoxGeometry(1, 1, 1)
 const cone = new THREE.ConeGeometry(1, 1, 24)
 const cylinder = new THREE.CylinderGeometry(1, 1, 1, 32)
@@ -68,14 +68,22 @@ export function shapeModel(name, color) {
 export function castleModel() {
   const group = new THREE.Group()
   block(group, '#d69fe8', [0, .52, 0], [1.6, 1.04, .76])
+  block(group, '#efc8f2', [0, 1.03, 0], [1.64, .13, .8])
+  for (const x of [-.43, .43]) {
+    block(group, '#efc8f2', [x, 1.16, .3], [.19, .24, .2])
+    ball(group, '#fff0bc', [x, .7, .38], [.084, .12, .035])
+  }
+  block(group, '#ecc99a', [0, .07, .47], [.62, .14, .37])
   block(group, '#9062a8', [0, .34, .39], [.31, .65, .05])
-  ball(group, '#9062a8', [0, .66, .41], [.155, .15, .04])
+  ball(group, '#9062a8', [0, .645, .4], [.155, .15, .035])
   for (const x of [-.77, 0, .77]) {
     const tall = x === 0
     const height = tall ? 1.62 : 1.25
     const z = tall ? -.16 : .15
     drum(group, '#ead2f4', [x, height / 2, z], [.25, height, .25])
+    drum(group, '#f7ddf1', [x, height - .045, z], [.28, .095, .28])
     point(group, '#9762d0', [x, height + .24, z], [.34, .57, .34])
+    ball(group, '#fce2a5', [x, height + .51, z], [.063, .063, .063])
     if (tall) {
       drum(group, '#fbdb8b', [x, height + .62, z], [.025, .34, .025])
       block(group, '#f7a1ae', [x + .13, height + .72, z], [.26, .14, .045])
@@ -216,7 +224,7 @@ export function glyphModel(text, color = '#72489e', printedOnly = false) {
   const plane = new THREE.PlaneGeometry(1.13, 1.13)
   const decal = new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthWrite: false })
   const print = new THREE.Mesh(plane, decal)
-  print.position.z = .16
+  print.position.z = printedOnly ? .015 : .232
   tile.add(print)
   group.userData.dispose = () => { texture.dispose(); plane.dispose(); decal.dispose() }
   return group
@@ -284,7 +292,15 @@ export function islandModel() {
   const group = new THREE.Group()
   ball(group, '#92b8ae', [0, -.4, 0], [2.6, .53, 1.2])
   ball(group, '#b4d9a3', [0, -.26, .04], [2.57, .25, 1.17])
-  ball(group, '#efc58b', [0, -.05, .72], [1.4, .035, .23])
+  for (let i = 0; i < 7; i++) {
+    ball(group, i % 2 ? '#fae1ad' : '#eed2a0', [(i - 3) * .23, -.023, .4 + Math.sin(i / 2) * .23], [.13, .035, .09])
+  }
+  for (const [x, z] of [[-1.97, -.4], [1.97, -.42], [-1.33, -.64], [1.3, -.6]]) {
+    const height = Math.abs(x) > 1.5 ? .51 : .68
+    drum(group, '#ba8b73', [x, .08, z], [.057, .38, .057])
+    ball(group, '#8bc4ab', [x, height, z], [.26, height * .67, .23])
+    ball(group, '#a8d4ae', [x - .12, height - .1, z + .09], [.19, .22, .17])
+  }
   const castle = castleModel()
   castle.position.set(.1, -.05, -.16)
   castle.rotation.y = -.18

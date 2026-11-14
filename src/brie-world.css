@@ -1,7 +1,9 @@
+@import "@fontsource-variable/nunito/wght.css";
+
 :root {
   --ink: #3d2d55;
   --muted-ink: #69577e;
-  font-family: Nunito, ui-rounded, system-ui, sans-serif;
+  font-family: "Nunito Variable", ui-rounded, system-ui, sans-serif;
   color: var(--ink);
   background: #f7f2fc;
 }
@@ -29,13 +31,13 @@
 }
 .world-hero {
   position: relative; overflow: hidden; isolation: isolate; display: grid;
-  grid-template-columns: .9fr 1.3fr; align-items: center; min-height: 290px;
+  grid-template-columns: .9fr 1.3fr; align-items: center; min-height: 266px;
   border: 2px solid #fff9; border-radius: 36px;
   background: radial-gradient(ellipse at 71% 34%, #fdf2dd, transparent 56%), linear-gradient(130deg, #eadffc, #f8e4ed);
   box-shadow: 0 12px 32px #79549f16;
 }
 .world-copy { padding: 32px 0 32px 38px; z-index: 1; }
-.world-copy h1 { font-size: clamp(40px, 7vw, 76px); line-height: .98; letter-spacing: -.063em; margin: 0; font-weight: 900; }
+.world-copy h1 { font-size: clamp(40px, 7vw, 76px); line-height: .98; letter-spacing: -.048em; margin: 0; font-weight: 900; }
 .world-copy p { font-size: clamp(15px, 2vw, 19px); color: #685484; margin: 13px 0 0; font-weight: 800; }
 .world-island { width: 125%; height: auto; display: block; margin-left: -15%; filter: drop-shadow(0 15px 13px #74549130); }
 span.world-island { text-align: center; font-size: 90px; }
@@ -59,7 +61,7 @@ span.world-island { text-align: center; font-size: 90px; }
 .world-footer { padding-top: 29px; text-align: center; color: var(--muted-ink); font-size: 12px; font-weight: 800; }
 .battle-stage {
   position: relative; width: 100%; flex: 1; min-height: 0; overflow: hidden; border-radius: 26px;
-  touch-action: none; user-select: none; background: #c8e7ef; box-shadow: 0 9px 25px #53446625;
+  touch-action: none; user-select: none; background: linear-gradient(180deg, #9fd4ee, #dfeeed 69%, #f8eed5); box-shadow: 0 9px 25px #53446625;
 }
 .battle-indicator {
   pointer-events: none; position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
@@ -75,11 +77,11 @@ span.world-island { text-align: center; font-size: 90px; }
 @media (max-width: 650px) {
   .world-home { padding-inline: 16px; }
   .world-top { min-height: 58px; }
-  .world-hero { min-height: 229px; border-radius: 28px; grid-template-columns: 1fr; align-content: start; }
+  .world-hero { min-height: 0; border-radius: 28px; grid-template-columns: 1fr; align-content: start; }
   .world-copy { padding: 22px 17px 0; text-align: center; }
   .world-copy h1 { font-size: clamp(34px, 10vw, 50px); }
   .world-copy p { margin-top: 5px; }
-  .world-island { position: relative; width: min(125%, 550px); margin: -7px 0 -9px; justify-self: center; }
+  .world-island { position: relative; width: min(110%, 520px); margin: -9px 0 -1px; justify-self: center; }
   .world-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
   .world-tile { min-height: 102px; font-size: 13px; border-radius: 19px; padding: 4px 5px 9px; }
   .world-tile img { width: 65px; height: 65px; }
@@ -90,3 +92,27 @@ span.world-island { text-align: center; font-size: 90px; }
 @media (prefers-reduced-motion: reduce) {
   .world-tile { transition: none; }
 }
+
+
+.battle-scores {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 11px;
+}
+.battle-score {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid #e4d6ec;
+  border-radius: 16px;
+  padding: 5px 9px 5px 5px;
+  background: #fff8;
+  text-align: left;
+  line-height: 1.05;
+  font-weight: 800;
+}
+.battle-score.active { border-color: #b48bcc; background: #fff; }
+.battle-score img { display: block; border-radius: 10px; background: #f3e8f9; }
+.battle-score small { display: block; margin-top: 3px; color: #7d4ba0; letter-spacing: .11em; }
