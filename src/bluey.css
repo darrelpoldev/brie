@@ -68,3 +68,16 @@
   .bluey-room { width: min(100%, 68vh); }
   .bluey-shell { padding-top: 8px; }
 }
+
+.bluey-rooms { display: flex; justify-content: center; gap: 6px; margin: 0 auto 12px; max-width: 460px; }
+.bluey-rooms button, .bluey-listen {
+  min-height: 44px; border: 1px solid #aecbdc; color: #275675; background: #edf7fc;
+  border-radius: 13px; padding: 4px 8px; font: inherit; font-size: 13px; font-weight: 900;
+  cursor: pointer; touch-action: manipulation;
+}
+.bluey-rooms button { flex: 1; }
+.bluey-rooms button span { margin-right: 4px; }
+.bluey-rooms button[aria-current] { background: #286996; color: white; border-color: #286996; }
+.bluey-rooms button.room-clue { background: #ffe59b; border-color: #bc8d42; }
+.bluey-listen { margin-top: 15px; padding-inline: 16px; }
+.bluey-listen:disabled { opacity: .62; cursor: default; }

@@ -15,6 +15,13 @@ const spots = [
   { name: 'Pillow', x: 2, y: -2.55, color: '#c795d5', symbol: '✿' },
 ]
 
+const rooms = [
+  { name: 'Living room', icon: '🛋', wall: '#f8ddbd', rug: '#e1a58e', props: [0, 2, 5] },
+  { name: 'Playroom', icon: '🧸', wall: '#d9e8bc', rug: '#a7c7dc', props: [1, 3, 4] },
+  { name: 'Bedroom', icon: '🛏', wall: '#e6d3ed', rug: '#c2a4d8', props: [0, 4, 5] },
+]
+const positions = [[-2.07, .54], [2.05, .39], [.75, -1.76]]
+
 const roundedBrick = new RoundedBoxGeometry(1, 1, 1, 4, .095)
 const brickMaterials = new Map()
 
@@ -150,15 +157,15 @@ function Reveal({ model }) {
   return <group ref={ref}><primitive object={model} /></group>
 }
 
-function Room({ opened, hiding, found, hint, friend }) {
-  const { props, pup, backdrop } = useMemo(() => {
+function Room({ room, opened, hiding, found, hint, friend, guidePosition }) {
+  const { props, pup, guide, backdrop } = useMemo(() => {
     const backdrop = new Group()
-    block(backdrop, '#f8ddbd', [0, 1.5, -1.5], [7.2, 4.3, .3])
+    block(backdrop, room.wall, [0, 1.5, -1.5], [7.2, 4.3, .3])
     block(backdrop, '#e2b68f', [0, -2.1, -1.4], [7.2, 3, .3])
     block(backdrop, '#fff2d4', [0, -.66, -1.19], [7.2, .15, .13])
     for (let i = 0; i < 6; i++) block(backdrop, '#edc59f', [0, -.95 - i * .48, -1.19], [7.2, .06, .12])
     block(backdrop, '#d98e84', [0, -2.26, -1.04], [2.5, 2.2, .1])
-    block(backdrop, '#edaa94', [0, -2.26, -.97], [2.22, 1.92, .09])
+    block(backdrop, room.rug, [0, -2.26, -.97], [2.22, 1.92, .09])
     for (const y of [-1.45, -3.06]) block(backdrop, '#fff0c7', [0, y, -.9], [2.09, .06, .06])
     // Printed wall trim, a garden window, and exposed studs give the
     // scene the depth of a toy set viewed with the front wall removed.
@@ -179,14 +186,16 @@ function Room({ opened, hiding, found, hint, friend }) {
       star.position.set(x, y, -1.15)
       backdrop.add(star)
     }
-    return { backdrop, props: spots.map(makeProp), pup: pupModel(friend === 'Bingo') }
-  }, [friend])
+    return { backdrop, props: room.props.map(index => makeProp(spots[index])), pup: pupModel(friend === 'Bingo'), guide: pupModel(friend !== 'Bingo') }
+  }, [room, friend])
   return <Canvas orthographic camera={camera} dpr={[1, 1.5]} frameloop="demand" aria-hidden="true"
     fallback={<div className="bluey-fallback" />} gl={{ antialias: true, powerPreference: 'low-power' }}>
     <hemisphereLight args={['#fff6e4', '#b9a1b7', 2.15]} />
     <directionalLight position={[-3, 6, 6]} color="#fff2d7" intensity={2.4} />
     <primitive object={backdrop} />
-    {spots.map(({ x, y, name }, index) => {
+    <SearchGuide model={guide} target={guidePosition} />
+    {positions.map(([x, y], index) => {
+      const { name } = spots[room.props[index]]
       const inspected = opened.includes(index)
       return <group key={name} position={[x, y, 0]}>
         <mesh position={[0, -.54, -.53]} scale={[1, .2, .05]}>
@@ -195,40 +204,67 @@ function Room({ opened, hiding, found, hint, friend }) {
         </mesh>
         <HidingProp model={props[index]} inspected={inspected} side={index % 2 ? 1 : -1} />
         {index === hiding && found && <Reveal model={pup} />}
-        {index === hiding && hint && !found && <mesh position={[.76, .64, .9]}>
-          <sphereGeometry args={[.113, 16, 12]} /><meshBasicMaterial color="#fff1a4" />
-        </mesh>}
+        {index === hiding && hint && !found && <group position={[.64, .71, .52]} rotation={[0, 0, -.26]}>
+          <mesh position={[-.12, 0, 0]}><boxGeometry args={[.15, .31, .14]} />
+            <meshStandardMaterial color={friend === 'Bingo' ? '#ad522d' : '#304b85'} /></mesh>
+          <mesh position={[.13, .035, 0]}><boxGeometry args={[.15, .33, .14]} />
+            <meshStandardMaterial color={friend === 'Bingo' ? '#efa356' : '#639dd7'} /></mesh>
+        </group>}
       </group>
     })}
   </Canvas>
 }
 
-function newSpot(previous) {
-  const offset = 1 + Math.floor(Math.random() * (spots.length - 1))
-  return (previous + offset) % spots.length
+function SearchGuide({ model, target }) {
+  const ref = useRef(null)
+  useFrame(({ invalidate }, delta) => {
+    const position = ref.current.position
+    const step = Math.min(1, delta * 8)
+    position.x += (target[0] - position.x) * step
+    position.y += (target[1] - position.y) * step
+    const distance = Math.hypot(target[0] - position.x, target[1] - position.y)
+    ref.current.rotation.y = target[0] > position.x ? .34 : -.19
+    if (distance > .015) invalidate()
+  })
+  return <group ref={ref} position={[-2.32, -2.26, 1]} scale={.78}><primitive object={model} /></group>
+}
+
+function hideFriend(previousRoom) {
+  return {
+    room: (previousRoom + 1 + Math.floor(Math.random() * (rooms.length - 1))) % rooms.length,
+    prop: Math.floor(Math.random() * positions.length),
+  }
 }
 
 export default function Bluey({ onBack }) {
   const [playing, setPlaying] = useState(false)
-  const [hiding, setHiding] = useState(() => Math.floor(Math.random() * spots.length))
+  const [hiding, setHiding] = useState(() => hideFriend(0))
+  const [roomIndex, setRoomIndex] = useState(0)
   const [round, setRound] = useState(0)
-  const friend = round % 2 === 0 ? 'Bluey' : 'Bingo'
-  const [opened, setOpened] = useState([])
+  const [checked, setChecked] = useState({})
+  const [lastProp, setLastProp] = useState(null)
+  const [clue, setClue] = useState(false)
+  const friend = round % 2 === 0 ? 'Bingo' : 'Bluey'
+  const seeker = friend === 'Bingo' ? 'Bluey' : 'Bingo'
+  const room = rooms[roomIndex]
+  const opened = checked[roomIndex] ?? []
+  const rightRoom = roomIndex === hiding.room
+  const found = Boolean(checked[hiding.room]?.includes(hiding.prop))
+  const hint = rightRoom && clue && !found
+  const guidePosition = lastProp === null ? [-2.32, -2.26] : [positions[lastProp][0] - .68, positions[lastProp][1] - .61]
   const startRef = useRef(null)
   const audioRef = useRef(null)
   const firstSpotRef = useRef(null)
   const replayRef = useRef(null)
-  const found = opened.includes(hiding)
-  const hint = opened.length >= 2 && !found
   useEffect(() => () => { audioRef.current?.close().catch(() => {}) }, [])
 
-  function playReveal() {
+  function playNotes(notes) {
     const Audio = window.AudioContext || window.webkitAudioContext
     if (!Audio) return
     const audio = audioRef.current ??= new Audio()
     if (audio.state === 'suspended') audio.resume().catch(() => {})
     const now = audio.currentTime
-    for (const [index, note] of [523, 659, 784].entries()) {
+    for (const [index, note] of notes.entries()) {
       const tone = audio.createOscillator()
       const gain = audio.createGain()
       const start = now + index * .09
@@ -248,19 +284,36 @@ export default function Bluey({ onBack }) {
 
   function search(index) {
     if (found || opened.includes(index)) return
-    setOpened([...opened, index])
-    if (index === hiding) {
-      playReveal()
+    setLastProp(index)
+    setChecked({ ...checked, [roomIndex]: [...opened, index] })
+    if (rightRoom && index === hiding.prop) {
+      playNotes([523, 659, 784])
       requestAnimationFrame(() => replayRef.current?.focus())
+    } else {
+      playNotes([392, 523])
+      setClue(true)
     }
   }
 
-  function replay() {
-    setHiding(newSpot(hiding))
-    setRound(round + 1)
-    setOpened([])
-    requestAnimationFrame(() => firstSpotRef.current?.focus())
+  function moveTo(index) {
+    setRoomIndex(index)
+    setLastProp(null)
   }
+
+  function reset(nextRound) {
+    setHiding(hideFriend(hiding.room))
+    setRound(nextRound)
+    setChecked({})
+    setLastProp(null)
+    setClue(false)
+    setRoomIndex(0)
+  }
+
+  const message = found
+    ? `You found ${friend}!`
+    : clue
+      ? rightRoom ? 'Look! Someone’s peeking out.' : `I hear a giggle in the ${rooms[hiding.room].name.toLowerCase()}!`
+      : `Help ${seeker} find ${friend}.`
 
   return <main className="bluey-page">
     <div className="bluey-shell">
@@ -268,41 +321,52 @@ export default function Bluey({ onBack }) {
         <button type="button" aria-label={playing ? 'Back to Bluey' : 'Back to playroom'} onClick={() => {
           if (!playing) return onBack()
           setPlaying(false)
-          setOpened([])
-          setRound(0)
-          setHiding(newSpot(hiding))
+          reset(0)
           requestAnimationFrame(() => startRef.current?.focus())
         }}>←</button>
         <strong>Bluey</strong>
       </header>
       {playing ? <section className="bluey-game" aria-labelledby="hide-title">
         <h1 id="hide-title">Hide &amp; Seek</h1>
-        <p role="status" className="bluey-status">{found ? `You found ${friend}!` : hint ? 'Look for the little sparkle!' : opened.length ? 'Try another hiding spot!' : `Where’s ${friend}? Tap to look!`}</p>
-        <div className="bluey-room">
-          <Room friend={friend} opened={opened} hiding={hiding} found={found} hint={hint} />
+        <p role="status" className="bluey-status">{message}</p>
+        <nav className="bluey-rooms" aria-label="Rooms">
+          {rooms.map(({ name, icon }, index) => <button key={name} type="button"
+            aria-current={roomIndex === index ? 'location' : undefined}
+            className={clue && !found && index === hiding.room && !rightRoom ? 'room-clue' : undefined}
+            onClick={() => moveTo(index)} disabled={found}>
+            <span aria-hidden="true">{icon}</span>{name}
+          </button>)}
+        </nav>
+        <div className="bluey-room" aria-label={room.name}>
+          <Room key={roomIndex} room={room} guidePosition={guidePosition} friend={friend}
+            opened={opened} hiding={rightRoom ? hiding.prop : -1} found={found} hint={hint} />
           <div className="bluey-spots">
-            {spots.map(({ name, x, y, symbol }, index) => {
-              const checked = opened.includes(index)
-              const isHint = hint && index === hiding
+            {positions.map(([x, y], index) => {
+              const { name, symbol } = spots[room.props[index]]
+              const inspected = opened.includes(index)
+              const isHint = hint && index === hiding.prop
+              const isFound = found && rightRoom && index === hiding.prop
               return <button key={name} type="button" ref={index === 0 ? firstSpotRef : undefined}
                 style={{ left: `${50 + x / frame * 50}%`, top: `${50 - y / frame * 50}%` }}
-                className={`bluey-spot${checked ? ' checked' : ''}${isHint ? ' sparkle' : ''}`}
+                className={`bluey-spot${inspected ? ' checked' : ''}${isHint ? ' sparkle' : ''}`}
                 aria-label={`Check the ${name.toLowerCase()}${isHint ? ', sparkling' : ''}`}
-                disabled={found || checked} onClick={() => search(index)}>
-                <span className="bluey-prop-fallback" aria-hidden="true">{checked && index === hiding ? '🐶' : symbol}</span>
-                <span>{checked && index === hiding ? 'Found!' : checked ? 'Empty' : name}</span>
+                disabled={found || inspected} onClick={() => search(index)}>
+                <span className="bluey-prop-fallback" aria-hidden="true">{isFound ? '🐶' : symbol}</span>
+                <span>{isFound ? 'Found!' : inspected ? 'Empty' : name}</span>
               </button>
             })}
           </div>
         </div>
-        {found && <button className="bluey-primary" type="button" ref={replayRef} onClick={replay}>
-          Find {friend === 'Bluey' ? 'Bingo' : 'Bluey'} →
-        </button>}
+        {!found && <button className="bluey-listen" type="button" onClick={() => { playNotes([587, 740, 659]); setClue(true) }} disabled={clue}>Listen for a giggle</button>}
+        {found && <button className="bluey-primary" type="button" ref={replayRef} onClick={() => {
+          reset(round + 1)
+          requestAnimationFrame(() => firstSpotRef.current?.focus())
+        }}>Your turn, {friend}! →</button>}
       </section> : <section className="bluey-intro">
         <div className="bluey-character"><BlueyArt size={184} /></div>
         <h1>Hide &amp; Seek</h1>
-        <p>Bluey is hiding somewhere in the playroom.</p>
-        <button className="bluey-primary" type="button" ref={startRef} onClick={start}>Find Bluey</button>
+        <p>Bingo is hiding somewhere in the house.</p>
+        <button className="bluey-primary" type="button" ref={startRef} onClick={start}>Find Bingo</button>
       </section>}
     </div>
   </main>
