@@ -6,6 +6,13 @@ import { ball, block, drum } from './toyModels'
 const roomWidth = 6
 const roomHeight = 6
 
+export function characterPosition(station, index, seated) {
+  return {
+    x: seated ? 1.77 : (index - 1.5) * 1.19,
+    y: seated ? -1.29 : station === 4 ? -1.42 : -1.79,
+  }
+}
+
 function buildHouse(stations, makeProp) {
   const house = new Group()
   stations.forEach(({ color }, index) => {
@@ -111,8 +118,12 @@ export default function FamilyScene({ stations, family, places, makeCharacter, m
     <hemisphereLight args={['#fff4e1', '#b2abd0', 2.05]} />
     <directionalLight position={[-4, 7, 7]} color="#fff3dc" intensity={2.55} />
     <primitive object={scenery} />
-    {places.map((station, index) => station === null ? null : <Puppet key={index} model={dolls[index]} station={station} sitting={seated === index} held={carrying?.member === index}
-      destination={{ x: station * roomWidth + (seated === index ? 1.77 : (index - 1.5) * 1.19), y: seated === index ? -1.29 : station === 4 ? -1.42 : -1.79 }}
-      action={feedback?.member === index ? feedback.repeat : 0} />)}
+    {places.map((station, index) => {
+      const sitting = seated === index
+      const position = characterPosition(station, index, sitting)
+      return <Puppet key={index} model={dolls[index]} station={station} sitting={sitting}
+        held={carrying?.member === index} destination={{ x: station * roomWidth + position.x, y: position.y }}
+        action={feedback?.member === index ? feedback.repeat : 0} />
+    })}
   </Canvas>
 }

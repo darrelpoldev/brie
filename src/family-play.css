@@ -140,3 +140,16 @@
   position: absolute; left: 75%; top: calc(var(--room-width) * -.10); width: 28%; z-index: 2;
 }
 .family-room:has(.family-seated) .family-chair { z-index: auto; }
+
+/* Align touch targets with the actual camera projection of the figures. */
+.family-world:has(canvas) .family-room-cast { inset: 0; width: auto; margin: 0; display: block; }
+.family-world:has(canvas) .family-pose {
+  position: absolute; left: var(--puppet-left);
+  top: var(--puppet-top);
+  width: clamp(46px, 20%, 82px);
+  transform: translate(-50%, -50%);
+}
+.family-world:has(canvas) .family-room-cast { height: var(--room-width); }
+.family-world:has(canvas) .family-in-room { position: relative; z-index: 2; }
+.family-world:has(canvas) .family-in-room img { height: clamp(56px, 24cqw, 86px); max-width: 100%; object-fit: contain; }
+.family-world:has(canvas) .family-reaction { top: -8px; }

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Group } from 'three'
 import { RenderedToy } from './ToyArt'
 import { ball, block, drum, productModel } from './toyModels'
-import FamilyScene from './FamilyScene'
+import FamilyScene, { characterPosition } from './FamilyScene'
 import './family-play.css'
 
 const family = [
@@ -95,6 +95,11 @@ function activityModel(index) {
   return group
 }
 
+function puppetTarget(station, index, sitting) {
+  const { x, y } = characterPosition(station, index, sitting)
+  return { '--puppet-left': `${50 + x * 100 / 6}%`, '--puppet-top': `${50 - y * 100 / 6}%` }
+}
+
 function CharacterArt({ member, makeCharacter, size }) {
   return <RenderedToy artKey={`family:${member.name}`} size={size} fallback={member.warm ? '🟠' : '🔵'}
     makeModel={() => makeCharacter(member.warm, member.adult)} />
@@ -154,14 +159,15 @@ export default function FamilyPlay({ makeCharacter, onBack }) {
     if (!current?.moving || current.member === null) return
     const bounds = house.current.getBoundingClientRect()
     if (current.y >= bounds.top && current.y <= bounds.bottom) {
-      if (current.x > bounds.right - 48) house.current.scrollLeft += 8
-      if (current.x < bounds.left + 48) house.current.scrollLeft -= 8
+      const right = Math.max(0, current.x - (bounds.right - 42))
+      const left = Math.max(0, bounds.left + 42 - current.x)
+      house.current.scrollLeft += Math.max(-9, Math.min(9, (right - left) / 5))
     }
     frame.current = requestAnimationFrame(autoScroll)
   }
 
   function startDrag(event, member) {
-    if (!event.isPrimary || event.button !== 0) return
+    if (!event.isPrimary || event.button !== 0 || drag.current) return
     handledDrag.current = false
     drag.current = { member, id: event.pointerId, x: event.clientX, y: event.clientY, startX: event.clientX, startY: event.clientY }
     event.currentTarget.setPointerCapture(event.pointerId)
@@ -189,16 +195,23 @@ export default function FamilyPlay({ makeCharacter, onBack }) {
     if (canceled || !current.moving) return
     handledDrag.current = true
     const hit = document.elementFromPoint(event.clientX, event.clientY)
+    const holder = hit?.closest('[data-family-member]')
+    const droppedOnSeated = holder && Number(holder.dataset.familyMember) === seated
     const target = hit?.closest('[data-play-station]')
     if (!target || !house.current.contains(target)) return
     const station = Number(target.dataset.playStation)
     if (current.member === null) {
-      const recipient = hit.closest('[data-family-member]')
-      if (station === 0 && recipient) act(Number(recipient.dataset.familyMember), 0)
+      if (station !== 0) return
+      const recipient = holder ?? [...target.querySelectorAll('[data-family-member]')].find(button => {
+        const rect = button.getBoundingClientRect()
+        return event.clientX >= rect.left - 12 && event.clientX <= rect.right + 12 &&
+          event.clientY >= rect.top - 12 && event.clientY <= rect.bottom + 12
+      })
+      if (recipient) act(Number(recipient.dataset.familyMember), 0)
       return
     }
     if (station === 0) {
-      if (hit.closest('[data-kitchen-chair]')) sit(current.member)
+      if (hit.closest('[data-kitchen-chair]') || droppedOnSeated) sit(current.member)
       else {
         if (seated === current.member) setSeated(null)
         setPlaces(previous => previous.map((place, index) => index === current.member ? 0 : place))
@@ -224,7 +237,8 @@ export default function FamilyPlay({ makeCharacter, onBack }) {
       data-family-member={inRoom ? index : undefined}
       aria-pressed={index === selected} onClick={() => { if (!handledDrag.current) setSelected(index); handledDrag.current = false }}
       onPointerDown={event => startDrag(event, index)} onPointerMove={moveDrag}
-      onPointerUp={event => finishDrag(event)} onPointerCancel={event => finishDrag(event, true)}>
+      onPointerUp={event => finishDrag(event)} onPointerCancel={event => finishDrag(event, true)}
+      onLostPointerCapture={event => finishDrag(event, true)}>
       <CharacterArt member={member} makeCharacter={makeCharacter} size={66} />
       <span>{member.name}</span>
     </button>
@@ -249,7 +263,8 @@ export default function FamilyPlay({ makeCharacter, onBack }) {
             onPointerDown={index === 0 ? event => startDrag(event, null) : undefined}
             onPointerMove={index === 0 ? moveDrag : undefined}
             onPointerUp={index === 0 ? event => finishDrag(event) : undefined}
-            onPointerCancel={index === 0 ? event => finishDrag(event, true) : undefined} onClick={() => {
+            onPointerCancel={index === 0 ? event => finishDrag(event, true) : undefined}
+            onLostPointerCapture={index === 0 ? event => finishDrag(event, true) : undefined} onClick={() => {
             if (index === 0 && handledDrag.current) { handledDrag.current = false; return }
             const occupant = places.indexOf(index)
             act(index === 0 && seated !== null ? seated : places[selected] === index || occupant === -1 ? selected : occupant, index)
@@ -261,7 +276,7 @@ export default function FamilyPlay({ makeCharacter, onBack }) {
             aria-label="Chair. Drag a character here to sit" onClick={() => sit(selected)}><span>Chair</span></button>}
           <div className="family-room-cast">
             {family.map((member, memberIndex) => places[memberIndex] === index && <div
-              className={`family-pose family-pose-${index}${index === 0 && seated === memberIndex ? ' family-seated' : ''}`} style={{ gridColumn: memberIndex + 1 }}
+              className={`family-pose family-pose-${index}${index === 0 && seated === memberIndex ? ' family-seated' : ''}`} style={puppetTarget(index, memberIndex, seated === memberIndex)}
               key={`${member.name}:${feedback?.member === memberIndex ? feedback.repeat : ''}`}>
               {character(member, memberIndex, true)}
               {feedback?.member === memberIndex && feedback.station === index && <span className="family-reaction" aria-hidden="true">{station.icon}</span>}
