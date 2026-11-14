@@ -98,3 +98,31 @@
 .family-world .family-challenge { margin-top: max(90px, calc(var(--room-width) * .32)); }
 .family-world .family-notes + .family-challenge { margin-top: 8px; }
 @media (min-width: 650px) { .family-world { --room-width: min(55cqw, 400px); } }
+
+.family-play { background: radial-gradient(ellipse at top, #fff5d9, transparent 60%), #deeff3; }
+.family-play h1 { margin: 3px 0; }
+.family-prompt { margin: 4px 0 9px; }
+.family-cast { margin-bottom: 10px; }
+.family-cast .family-puppet { background: #fff7e8; box-shadow: 0 2px 0 #9c87751a; }
+.family-cast .family-puppet[aria-pressed=true] { background: #fff; }
+.family-house { background: #f6dcaf; scrollbar-color: #9d7c5e #ffefcf; }
+.family-room h2 {
+  z-index: 1; align-self: start; margin: 0 7px; font-size: 14px;
+  background: #fff6db; color: #524233; border-radius: 20px; padding: 4px 10px;
+}
+.family-world .family-activity {
+  width: 60%; margin: 0; height: calc(var(--room-width) * .52); align-content: end;
+}
+.family-activity > span:last-child { background: #fff4d0; box-shadow: 0 3px 0 #99734e44; }
+.family-activity:active > span:last-child { transform: translateY(2px); }
+.family-world:has(canvas) .family-room-cast { top: calc(var(--room-width) * .63); }
+.family-world .family-notes { margin-top: max(80px, calc(var(--room-width) * .33)); }
+.family-world .family-challenge { margin-top: 5px; width: auto; }
+.family-world .family-room > div:has(> .family-challenge) { margin-top: max(80px, calc(var(--room-width) * .33)); }
+.family-world .family-room > .family-notes + div { margin-top: 3px; }
+.family-find-stars {
+  display: block; margin: 4px auto; min-height: 44px; padding: 5px 14px;
+  font: inherit; font-weight: 900; background: #fff5d9; color: #59462c;
+  border: 1px solid #e5ce9d; border-radius: 999px; cursor: pointer;
+}
+.family-status { min-height: 22px; margin: 7px 0 2px; }

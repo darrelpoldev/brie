@@ -102,8 +102,9 @@ function CharacterArt({ member, makeCharacter, size }) {
 
 export default function FamilyPlay({ makeCharacter, onBack }) {
   const [selected, setSelected] = useState(0)
-  const [places, setPlaces] = useState([null, null, null, null])
+  const [places, setPlaces] = useState([0, 2, 4, 1])
   const [feedback, setFeedback] = useState(null)
+  const [showChallenges, setShowChallenges] = useState(false)
   const [stars, setStars] = useState([])
   const [carrying, setCarrying] = useState(null)
   const house = useRef(null)
@@ -201,8 +202,7 @@ export default function FamilyPlay({ makeCharacter, onBack }) {
     <div className="bluey-shell">
       <header className="bluey-nav"><button type="button" aria-label="Back to Bluey" onClick={onBack}>←</button><strong>Bluey</strong></header>
       <h1>Play House</h1>
-      <p className="family-prompt">Swipe to explore. Drag a character into a room.</p>
-      <p className="family-stars" aria-live="polite">{stars.length === stations.length ? '★ You found all five stars!' : `★ ${stars.length} / ${stations.length} stars`}</p>
+      <p className="family-prompt">Tap a toy. Swipe to explore.</p>
       <div className="family-cast" aria-label="Choose a character">{family.map((member, index) => character(member, index))}</div>
       <div className="family-house" ref={house} tabIndex={0} role="region" aria-label="Play House. Scroll sideways to explore.">
         <div className="family-world">
@@ -213,7 +213,10 @@ export default function FamilyPlay({ makeCharacter, onBack }) {
         {stations.map((station, index) => <section className="family-room" key={station.name}
           data-play-station={index} aria-label={station.room} style={{ '--room-color': station.color }}>
           <h2>{station.room}</h2>
-          <button type="button" className="family-activity" aria-label={station.action} onClick={() => act(selected, index)}>
+          <button type="button" className="family-activity" aria-label={station.action} onClick={() => {
+            const occupant = places.indexOf(index)
+            act(places[selected] === index || occupant === -1 ? selected : occupant, index)
+          }}>
             <RenderedToy artKey={`family-station:${index}`} makeModel={() => activityModel(index)} fallback={station.icon} size={126} />
             <span>{station.name}</span>
           </button>
@@ -230,13 +233,19 @@ export default function FamilyPlay({ makeCharacter, onBack }) {
               style={{ '--key-color': ['#e7868b', '#efbd55', '#94c681', '#8fbbe7'][pitch] }}
               onClick={() => play([[523, 659, 784, 1047][pitch]])}>♪</button>)}
           </div>}
-          <RoomChallenge index={index} onComplete={earnStar} play={play} />
+          <div style={{ display: showChallenges ? undefined : "none" }}><RoomChallenge index={index} onComplete={earnStar} play={play} /></div>
         </section>)}
         </div>
       </div>
       <p role="status" className="family-status">{feedback
         ? `${family[feedback.member].name} ${stations[feedback.station].reaction}`
-        : `${family[selected].name} is ready to play.`}</p>
+        : ''}</p>
+      <button type="button" className="family-find-stars" aria-pressed={showChallenges}
+        onClick={() => setShowChallenges(!showChallenges)}>
+        {showChallenges ? 'Hide star challenges' : '☆ Find stars'}
+      </button>
+      {showChallenges && <p className="family-stars" aria-live="polite">{stars.length === stations.length
+        ? '★ You found all five stars!' : `★ ${stars.length} / ${stations.length} stars`}</p>}
       {carrying && <div className="family-carry" style={{ left: carrying.x, top: carrying.y }} aria-hidden="true">
         <CharacterArt member={family[carrying.member]} makeCharacter={makeCharacter} size={80} />
       </div>}

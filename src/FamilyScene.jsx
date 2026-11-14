@@ -29,6 +29,19 @@ function buildHouse(stations, makeProp) {
       block(room, '#a77253', [0, -.67, -.31], [2.32, 1.16, .7])
       block(room, '#fff1d0', [0, -.07, .04], [2.52, .18, 1])
     }
+    for (const [x, y, shade] of [[-1.85, 1.55, '#f4ca88'], [-1.02, 1.27, '#e5918b']]) {
+      if (index === 4) continue
+      block(room, '#fff1d8', [x, y, -.79], [.57, .65, .11], [0, 0, .07])
+      ball(room, shade, [x, y, -.72], [.16, .18, .04])
+    }
+    if (index === 1) {
+      block(room, '#af7751', [-1.48, -.6, -.22], [.15, 1.08, .3])
+      block(room, '#edb16d', [-1.38, -.05, -.14], [1.1, .16, .57])
+    }
+    if (index === 3) {
+      for (const x of [-2.2, 2.2]) block(room, '#f5e3cb', [x, -.88, -.59], [.8, .91, .12])
+      for (const [x, y] of [[-1.1,.6], [.9,.82], [1.3,.54]]) ball(room, '#d0f0f3', [x, y, -.53], [.15, .15, .09])
+    }
     const prop = makeProp(index)
     prop.position.set(0, index === 0 ? .36 : -.47, .22)
     prop.rotation.set(.24, -.28, 0)
