@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Group } from 'three'
 import { RenderedToy } from './ToyArt'
 import { ball, block, drum, productModel } from './toyModels'
+import FamilyScene from './FamilyScene'
 import './family-play.css'
 
 const family = [
@@ -204,9 +205,13 @@ export default function FamilyPlay({ makeCharacter, onBack }) {
       <p className="family-stars" aria-live="polite">{stars.length === stations.length ? '★ You found all five stars!' : `★ ${stars.length} / ${stations.length} stars`}</p>
       <div className="family-cast" aria-label="Choose a character">{family.map((member, index) => character(member, index))}</div>
       <div className="family-house" ref={house} tabIndex={0} role="region" aria-label="Play House. Scroll sideways to explore.">
+        <div className="family-world">
+          <div className="family-live-scene">
+            <FamilyScene stations={stations} family={family} places={places} makeCharacter={makeCharacter}
+              makeProp={activityModel} feedback={feedback} />
+          </div>
         {stations.map((station, index) => <section className="family-room" key={station.name}
           data-play-station={index} aria-label={station.room} style={{ '--room-color': station.color }}>
-          <div className="family-window" aria-hidden="true"><span /></div>
           <h2>{station.room}</h2>
           <button type="button" className="family-activity" aria-label={station.action} onClick={() => act(selected, index)}>
             <RenderedToy artKey={`family-station:${index}`} makeModel={() => activityModel(index)} fallback={station.icon} size={126} />
@@ -214,7 +219,7 @@ export default function FamilyPlay({ makeCharacter, onBack }) {
           </button>
           <div className="family-room-cast">
             {family.map((member, memberIndex) => places[memberIndex] === index && <div
-              className={`family-pose family-pose-${index}`} data-reacting={feedback?.member === memberIndex && feedback.station === index}
+              className={`family-pose family-pose-${index}`} style={{ gridColumn: memberIndex + 1 }}
               key={`${member.name}:${feedback?.member === memberIndex ? feedback.repeat : ''}`}>
               {character(member, memberIndex, true)}
               {feedback?.member === memberIndex && feedback.station === index && <span className="family-reaction" aria-hidden="true">{station.icon}</span>}
@@ -227,6 +232,7 @@ export default function FamilyPlay({ makeCharacter, onBack }) {
           </div>}
           <RoomChallenge index={index} onComplete={earnStar} play={play} />
         </section>)}
+        </div>
       </div>
       <p role="status" className="family-status">{feedback
         ? `${family[feedback.member].name} ${stations[feedback.station].reaction}`
