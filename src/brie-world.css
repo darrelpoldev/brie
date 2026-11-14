@@ -1,0 +1,118 @@
+@import "@fontsource-variable/nunito/wght.css";
+
+:root {
+  --ink: #3d2d55;
+  --muted-ink: #69577e;
+  font-family: "Nunito Variable", ui-rounded, system-ui, sans-serif;
+  color: var(--ink);
+  background: #f7f2fc;
+}
+
+.world-home {
+  height: 100%;
+  overflow: auto;
+  background: radial-gradient(ellipse at 78% 2%, #fde7dc 0%, transparent 42%),
+    radial-gradient(ellipse at 5% 34%, #e3ecff 0%, transparent 46%), #f8f3fc;
+  padding: 0 20px max(28px, env(safe-area-inset-bottom));
+}
+
+.world-shell { max-width: 960px; margin: auto; }
+.world-top, .world-section { display: flex; align-items: center; justify-content: space-between; }
+.world-top { min-height: 66px; gap: 12px; position: relative; }
+.world-logo { color: #674597; font-size: 19px; font-weight: 900; letter-spacing: .15em; }
+.world-install {
+  font: inherit; font-size: 13px; font-weight: 800; color: #5b4081;
+  border: 1px solid #e6d8f1; background: #fff9; border-radius: 999px; cursor: pointer;
+  min-height: 44px; padding: 4px 15px;
+}
+.world-tip {
+  position: absolute; right: 0; top: 60px; z-index: 2; max-width: 260px;
+  padding: 14px; background: #fff; border-radius: 16px; box-shadow: 0 8px 24px #55387622;
+}
+.world-hero {
+  position: relative; overflow: hidden; isolation: isolate; display: grid;
+  grid-template-columns: .9fr 1.3fr; align-items: center; min-height: 266px;
+  border: 2px solid #fff9; border-radius: 36px;
+  background: radial-gradient(ellipse at 71% 34%, #fdf2dd, transparent 56%), linear-gradient(130deg, #eadffc, #f8e4ed);
+  box-shadow: 0 12px 32px #79549f16;
+}
+.world-copy { padding: 32px 0 32px 38px; z-index: 1; }
+.world-copy h1 { font-size: clamp(40px, 7vw, 76px); line-height: .98; letter-spacing: -.048em; margin: 0; font-weight: 900; }
+.world-copy p { font-size: clamp(15px, 2vw, 19px); color: #685484; margin: 13px 0 0; font-weight: 800; }
+.world-island { width: 125%; height: auto; display: block; margin-left: -15%; filter: drop-shadow(0 15px 13px #74549130); }
+span.world-island { text-align: center; font-size: 90px; }
+.world-section { margin: 26px 0 12px; gap: 12px; }
+.world-section h2 { margin: 0; font-size: clamp(22px, 5vw, 28px); letter-spacing: -.035em; font-weight: 900; }
+.world-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.world-tile {
+  position: relative; min-width: 0; min-height: 133px; padding: 9px 8px 13px;
+  display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 2px;
+  color: var(--ink); font: inherit; font-weight: 900; line-height: 1.15; text-align: center;
+  border: 1px solid #fff; border-radius: 23px; background: var(--tile, #fff);
+  box-shadow: 0 4px 0 var(--base, #e1d6ee), 0 10px 19px #4e35600c;
+  cursor: pointer; touch-action: manipulation; transition: transform .18s ease, box-shadow .18s ease;
+}
+.world-tile:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--base); }
+.world-tile:focus-visible, .world-install:focus-visible { outline: 3px solid #8956ad; outline-offset: 4px; }
+.world-tile img { filter: drop-shadow(0 6px 4px #4e385230); }
+.world-tile:first-child { grid-column: span 2; flex-direction: row; gap: 10px; }
+.world-tile:first-child img { width: 104px; height: 104px; }
+.world-tile:first-child span { max-width: 110px; text-align: left; font-size: 20px; }
+.world-footer { padding-top: 29px; text-align: center; color: var(--muted-ink); font-size: 12px; font-weight: 800; }
+.battle-stage {
+  position: relative; width: 100%; flex: 1; min-height: 0; overflow: hidden; border-radius: 26px;
+  touch-action: none; user-select: none; background: linear-gradient(180deg, #9fd4ee, #dfeeed 69%, #f8eed5); box-shadow: 0 9px 25px #53446625;
+}
+.battle-indicator {
+  pointer-events: none; position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 8px; padding: 7px 13px; border-radius: 20px;
+  font-size: 13px; font-weight: 900; background: #fff8e9;
+}
+.battle-indicator progress { width: 65px; accent-color: #905fbd; }
+.battle-unsupported { position: absolute; inset: 45% 12px auto; font-weight: 800; }
+.game-art { object-fit: contain; vertical-align: middle; pointer-events: none; }
+@media (hover: hover) {
+  .world-tile:hover { transform: translateY(-3px); }
+}
+@media (max-width: 650px) {
+  .world-home { padding-inline: 16px; }
+  .world-top { min-height: 58px; }
+  .world-hero { min-height: 0; border-radius: 28px; grid-template-columns: 1fr; align-content: start; }
+  .world-copy { padding: 22px 17px 0; text-align: center; }
+  .world-copy h1 { font-size: clamp(34px, 10vw, 50px); }
+  .world-copy p { margin-top: 5px; }
+  .world-island { position: relative; width: min(110%, 520px); margin: -9px 0 -1px; justify-self: center; }
+  .world-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .world-tile { min-height: 102px; font-size: 13px; border-radius: 19px; padding: 4px 5px 9px; }
+  .world-tile img { width: 65px; height: 65px; }
+  .world-tile:first-child img { width: 83px; height: 83px; }
+  .world-tile:first-child span { font-size: 17px; }
+  .world-section { margin-top: 21px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .world-tile { transition: none; }
+}
+
+
+.battle-scores {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 11px;
+}
+.battle-score {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid #e4d6ec;
+  border-radius: 16px;
+  padding: 5px 9px 5px 5px;
+  background: #fff8;
+  text-align: left;
+  line-height: 1.05;
+  font-weight: 800;
+}
+.battle-score.active { border-color: #b48bcc; background: #fff; }
+.battle-score img { display: block; border-radius: 10px; background: #f3e8f9; }
+.battle-score small { display: block; margin-top: 3px; color: #7d4ba0; letter-spacing: .11em; }
