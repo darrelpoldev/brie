@@ -1,6 +1,7 @@
-import { useMemo, useRef, useState } from 'react'
-import { Canvas } from '@react-three/fiber'
-import { Group } from 'three'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Canvas, useFrame } from '@react-three/fiber'
+import { Group, Mesh, MeshStandardMaterial } from 'three'
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
 import { RenderedToy } from './ToyArt'
 import { ball, block, drum, shapeModel } from './toyModels'
 import './bluey.css'
@@ -14,33 +15,57 @@ const spots = [
   { name: 'Pillow', x: 2, y: -2.55, color: '#c795d5', symbol: '✿' },
 ]
 
-function pupModel() {
+const roundedBrick = new RoundedBoxGeometry(1, 1, 1, 4, .095)
+const brickMaterials = new Map()
+
+function brick(group, color, position, size, tilt = 0) {
+  if (!brickMaterials.has(color)) {
+    brickMaterials.set(color, new MeshStandardMaterial({ color, roughness: .36 }))
+  }
+  const piece = new Mesh(roundedBrick, brickMaterials.get(color))
+  piece.position.set(...position)
+  piece.scale.set(...size)
+  piece.rotation.z = tilt
+  group.add(piece)
+}
+
+function pupModel(bingo = false) {
   const pup = new Group()
-  const navy = '#28416e', blue = '#68a8d8', pale = '#a6d1ed', cream = '#fff0d5'
+  const dark = bingo ? '#ad522d' : '#304b85'
+  const base = bingo ? '#efa356' : '#639dd7'
+  const light = bingo ? '#ffcc83' : '#a4d2ef'
+  const cream = '#ffecd0'
+
   for (const side of [-1, 1]) {
-    block(pup, navy, [side * .43, .85, 0], [.32, .53, .34], [0, 0, -side * .15])
-    block(pup, '#eaab98', [side * .43, .9, .184], [.15, .24, .035])
-    block(pup, blue, [side * .28, -.74, .08], [.34, .3, .65])
-    block(pup, blue, [side * .58, -.33, .02], [.23, .46, .31], [0, 0, side * .18])
+    brick(pup, dark, [side * .44, .8, 0], [.34, .59, .33], -side * .18)
+    brick(pup, bingo ? '#f7ba81' : '#e4a69a', [side * .44, .87, .174], [.18, .32, .045], -side * .18)
+    brick(pup, dark, [side * .24, -.7, -.01], [.41, .37, .59])
+    brick(pup, light, [side * .24, -.79, .19], [.42, .2, .44])
+    brick(pup, base, [side * .597, -.26, -.01], [.27, .51, .33], side * .17)
+    brick(pup, light, [side * .64, -.433, .02], [.25, .17, .34], side * .17)
   }
-  block(pup, blue, [0, -.32, 0], [.98, .72, .57])
-  block(pup, pale, [0, -.34, .295], [.5, .54, .045])
-  block(pup, blue, [0, .3, .015], [1.2, .87, .71])
-  block(pup, navy, [-.39, .47, .376], [.39, .48, .055])
-  block(pup, pale, [.16, .62, .377], [.41, .16, .04])
+  brick(pup, dark, [.57, -.54, -.36], [.59, .29, .3], .42)
+  brick(pup, light, [.79, -.435, -.36], [.22, .28, .31], .42)
+  brick(pup, base, [0, -.22, 0], [1.09, .88, .67])
+  brick(pup, light, [.03, -.31, .325], [.56, .53, .055])
+  brick(pup, base, [0, .32, .018], [1.24, .91, .74])
+  brick(pup, dark, [-.36, .54, .382], [.49, .44, .053])
+  ball(pup, dark, [-.39, .44, .389], [.255, .235, .045])
   for (const side of [-1, 1]) {
-    ball(pup, '#fff9ee', [side * .225, .4, .43], [.145, .182, .058])
-    ball(pup, '#263446', [side * .225 + .022, .412, .479], [.07, .094, .035])
-    ball(pup, '#fff', [side * .225 + .004, .451, .508], [.025, .028, .012])
+    ball(pup, light, [side * .28, .655, .407], [.139, .059, .033]).rotation.z = side * .16
+    ball(pup, '#fffaf0', [side * .239, .417, .437], [.164, .219, .075])
+    ball(pup, '#202a3e', [side * .239 + .041, .415, .503], [.067, .107, .032])
+    ball(pup, '#fff', [side * .239 + .02, .462, .529], [.022, .028, .012])
   }
-  block(pup, cream, [.065, .078, .49], [.62, .31, .31])
-  ball(pup, navy, [.14, .15, .665], [.153, .092, .067])
-  ball(pup, '#9d605f', [.12, -.025, .651], [.11, .035, .027])
+  brick(pup, cream, [.055, .071, .495], [.67, .33, .35])
+  ball(pup, '#283449', [.192, .153, .683], [.161, .093, .09])
+  ball(pup, '#514254', [.1, -.023, .678], [.146, .064, .03])
+  ball(pup, '#f3a89d', [.137, -.048, .697], [.074, .027, .012])
   return pup
 }
 
 export function BlueyArt({ size = 92 }) {
-  return <RenderedToy artKey="bluey-pup" makeModel={pupModel} fallback="🐶" size={size} />
+  return <RenderedToy artKey="bluey-pup-v2" makeModel={() => pupModel()} fallback="🐶" size={size} />
 }
 
 function makeProp(spot) {
@@ -95,7 +120,37 @@ function makeProp(spot) {
 const frame = 3.5
 const camera = { left: -frame, right: frame, top: frame, bottom: -frame, position: [0, 0, 12] }
 
-function Room({ opened, hiding, found, hint }) {
+function HidingProp({ model, inspected, side }) {
+  const ref = useRef(null)
+  const progress = useRef(0)
+  useFrame(({ invalidate }, delta) => {
+    const target = inspected ? 1 : 0
+    progress.current += (target - progress.current) * Math.min(1, delta * 13)
+    if (Math.abs(target - progress.current) < .015) progress.current = target
+    const amount = progress.current
+    ref.current.position.set(side * .43 * amount, -.13 * amount, -.17 * amount)
+    ref.current.scale.setScalar(1 - .28 * amount)
+    ref.current.rotation.z = side * .19 * amount
+    if (amount !== target) invalidate()
+  })
+  return <group ref={ref}><primitive object={model} rotation={[.08, -side * .19, 0]} /></group>
+}
+
+function Reveal({ model }) {
+  const ref = useRef(null)
+  const start = useRef(null)
+  useFrame(({ clock, invalidate }) => {
+    start.current ??= clock.elapsedTime
+    const time = Math.min(1, (clock.elapsedTime - start.current) / .66)
+    ref.current.scale.setScalar(.62 + Math.sin(time * Math.PI / 2) * .43)
+    ref.current.position.set(-.13, Math.sin(time * Math.PI) * .37 + .19, .64)
+    ref.current.rotation.y = Math.sin(time * Math.PI) * .65 - .17
+    if (time < 1) invalidate()
+  })
+  return <group ref={ref}><primitive object={model} /></group>
+}
+
+function Room({ opened, hiding, found, hint, friend }) {
   const { props, pup, backdrop } = useMemo(() => {
     const backdrop = new Group()
     block(backdrop, '#f8ddbd', [0, 1.5, -1.5], [7.2, 4.3, .3])
@@ -105,8 +160,27 @@ function Room({ opened, hiding, found, hint }) {
     block(backdrop, '#d98e84', [0, -2.26, -1.04], [2.5, 2.2, .1])
     block(backdrop, '#edaa94', [0, -2.26, -.97], [2.22, 1.92, .09])
     for (const y of [-1.45, -3.06]) block(backdrop, '#fff0c7', [0, y, -.9], [2.09, .06, .06])
-    return { backdrop, props: spots.map(makeProp), pup: pupModel() }
-  }, [])
+    // Printed wall trim, a garden window, and exposed studs give the
+    // scene the depth of a toy set viewed with the front wall removed.
+    brick(backdrop, '#cc8c58', [0, 2.7, -1.34], [2.02, 1.34, .24])
+    brick(backdrop, '#8ecbe5', [0, 2.72, -1.19], [1.78, 1.11, .07])
+    ball(backdrop, '#fff0b1', [.51, 2.99, -1.13], [.21, .21, .022])
+    ball(backdrop, '#a1cb81', [-.55, 2.27, -1.12], [.77, .22, .045])
+    ball(backdrop, '#81b58a', [.56, 2.26, -1.11], [.71, .21, .045])
+    for (const x of [-.9, 0, .9]) block(backdrop, '#fff1d2', [x, 2.7, -1.04], [.075, 1.18, .15])
+    block(backdrop, '#fff1d2', [0, 2.68, -1.02], [1.89, .07, .14])
+    block(backdrop, '#fff1d2', [0, 2.11, -1.03], [2.12, .14, .36])
+    for (let i = 0; i < 14; i++) {
+      drum(backdrop, '#c8815e', [(i - 6.5) * .49, -3.29, -.79], [.14, .1, .12], [Math.PI / 2, 0, 0])
+    }
+    for (const [x, y, color] of [[-3.13, 2.65, '#eab66e'], [3.05, 2.58, '#e59196'], [-3.04, -.01, '#e7ab61']]) {
+      const star = shapeModel('star', color)
+      star.scale.setScalar(.17)
+      star.position.set(x, y, -1.15)
+      backdrop.add(star)
+    }
+    return { backdrop, props: spots.map(makeProp), pup: pupModel(friend === 'Bingo') }
+  }, [friend])
   return <Canvas orthographic camera={camera} dpr={[1, 1.5]} frameloop="demand" aria-hidden="true"
     fallback={<div className="bluey-fallback" />} gl={{ antialias: true, powerPreference: 'low-power' }}>
     <hemisphereLight args={['#fff6e4', '#b9a1b7', 2.15]} />
@@ -119,10 +193,8 @@ function Room({ opened, hiding, found, hint }) {
           <sphereGeometry args={[.9, 22, 12]} />
           <meshBasicMaterial transparent opacity={.19} color="#82564b" />
         </mesh>
-        {(!inspected || index !== hiding) && <primitive object={props[index]}
-          position={inspected ? [index % 2 ? .43 : -.43, -.13, -.17] : [0, 0, 0]}
-          scale={inspected ? .72 : 1} rotation={[.08, index % 2 ? -.19 : .19, inspected ? .17 : 0]} />}
-        {index === hiding && found && <primitive object={pup} scale={.93} />}
+        <HidingProp model={props[index]} inspected={inspected} side={index % 2 ? 1 : -1} />
+        {index === hiding && found && <Reveal model={pup} />}
         {index === hiding && hint && !found && <mesh position={[.76, .64, .9]}>
           <sphereGeometry args={[.113, 16, 12]} /><meshBasicMaterial color="#fff1a4" />
         </mesh>}
@@ -139,12 +211,35 @@ function newSpot(previous) {
 export default function Bluey({ onBack }) {
   const [playing, setPlaying] = useState(false)
   const [hiding, setHiding] = useState(() => Math.floor(Math.random() * spots.length))
+  const [round, setRound] = useState(0)
+  const friend = round % 2 === 0 ? 'Bluey' : 'Bingo'
   const [opened, setOpened] = useState([])
   const startRef = useRef(null)
+  const audioRef = useRef(null)
   const firstSpotRef = useRef(null)
   const replayRef = useRef(null)
   const found = opened.includes(hiding)
   const hint = opened.length >= 2 && !found
+  useEffect(() => () => { audioRef.current?.close().catch(() => {}) }, [])
+
+  function playReveal() {
+    const Audio = window.AudioContext || window.webkitAudioContext
+    if (!Audio) return
+    const audio = audioRef.current ??= new Audio()
+    if (audio.state === 'suspended') audio.resume().catch(() => {})
+    const now = audio.currentTime
+    for (const [index, note] of [523, 659, 784].entries()) {
+      const tone = audio.createOscillator()
+      const gain = audio.createGain()
+      const start = now + index * .09
+      tone.frequency.value = note
+      gain.gain.setValueAtTime(.09, start)
+      gain.gain.exponentialRampToValueAtTime(.001, start + .21)
+      tone.connect(gain).connect(audio.destination)
+      tone.start(start)
+      tone.stop(start + .22)
+    }
+  }
 
   function start() {
     setPlaying(true)
@@ -154,11 +249,15 @@ export default function Bluey({ onBack }) {
   function search(index) {
     if (found || opened.includes(index)) return
     setOpened([...opened, index])
-    if (index === hiding) requestAnimationFrame(() => replayRef.current?.focus())
+    if (index === hiding) {
+      playReveal()
+      requestAnimationFrame(() => replayRef.current?.focus())
+    }
   }
 
   function replay() {
     setHiding(newSpot(hiding))
+    setRound(round + 1)
     setOpened([])
     requestAnimationFrame(() => firstSpotRef.current?.focus())
   }
@@ -170,6 +269,7 @@ export default function Bluey({ onBack }) {
           if (!playing) return onBack()
           setPlaying(false)
           setOpened([])
+          setRound(0)
           setHiding(newSpot(hiding))
           requestAnimationFrame(() => startRef.current?.focus())
         }}>←</button>
@@ -177,9 +277,9 @@ export default function Bluey({ onBack }) {
       </header>
       {playing ? <section className="bluey-game" aria-labelledby="hide-title">
         <h1 id="hide-title">Hide &amp; Seek</h1>
-        <p role="status" className="bluey-status">{found ? 'You found Bluey!' : hint ? 'Look for the little sparkle!' : opened.length ? 'Try another hiding spot!' : 'Tap a hiding spot to find Bluey.'}</p>
+        <p role="status" className="bluey-status">{found ? `You found ${friend}!` : hint ? 'Look for the little sparkle!' : opened.length ? 'Try another hiding spot!' : `Where’s ${friend}? Tap to look!`}</p>
         <div className="bluey-room">
-          <Room opened={opened} hiding={hiding} found={found} hint={hint} />
+          <Room friend={friend} opened={opened} hiding={hiding} found={found} hint={hint} />
           <div className="bluey-spots">
             {spots.map(({ name, x, y, symbol }, index) => {
               const checked = opened.includes(index)
@@ -195,7 +295,9 @@ export default function Bluey({ onBack }) {
             })}
           </div>
         </div>
-        {found && <button className="bluey-primary" type="button" ref={replayRef} onClick={replay}>Play again</button>}
+        {found && <button className="bluey-primary" type="button" ref={replayRef} onClick={replay}>
+          Find {friend === 'Bluey' ? 'Bingo' : 'Bluey'} →
+        </button>}
       </section> : <section className="bluey-intro">
         <div className="bluey-character"><BlueyArt size={184} /></div>
         <h1>Hide &amp; Seek</h1>

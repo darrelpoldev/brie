@@ -45,3 +45,26 @@
 .bluey-prop-fallback { display: none; }
 .bluey-room:not(:has(canvas)) .bluey-prop-fallback { display: block; font-size: 37px; }
 .bluey-room:not(:has(canvas)) .bluey-spot { background: #f0b893; border: 1px solid #fff5e1; }
+
+.bluey-page {
+  background:
+    radial-gradient(ellipse at 50% 3%, #fff0c9 0%, #f5e9cc70 35%, transparent 66%),
+    linear-gradient(#e6f5fa, #d1e9f1);
+}
+.bluey-room {
+  border-width: 5px;
+  border-color: #fff4d8;
+  box-shadow: 0 6px 0 #bd9069, 0 17px 28px #785b5633;
+}
+.bluey-spot > span:last-child {
+  padding: 4px 10px;
+  color: #50372e;
+  box-shadow: 0 2px 0 #97644843;
+}
+.bluey-spot.checked > span:last-child { color: #73594b; }
+.bluey-spot.sparkle > span:last-child { background: #ffe993; }
+.bluey-game .bluey-primary { margin-top: 20px; }
+@media (orientation: landscape) and (max-height: 600px) {
+  .bluey-room { width: min(100%, 68vh); }
+  .bluey-shell { padding-top: 8px; }
+}
