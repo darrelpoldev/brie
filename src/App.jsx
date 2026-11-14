@@ -1,6 +1,8 @@
 import RoyalPoopBattle from './RoyalPoopBattle'
-import { lazy, Suspense } from 'react'
-const RoyalPoopBattle3D = lazy(() => import('./RoyalPoopBattle3D'))
+import Playroom from './Playroom'
+import { GamePiece } from './ToyArt'
+import { shapeNames as SHAPE_NAMES } from './toyModels'
+import './brie-world.css'
 import { useState, useRef, useCallback, useEffect } from 'react'
 
 // ─── Audio helpers (Web Audio API, no files needed) ─────────────────────────
@@ -257,45 +259,6 @@ function randomColor() {
   return COLORS[Math.floor(Math.random() * COLORS.length)]
 }
 
-// ─── Shape SVG paths ────────────────────────────────────────────────────────
-const SHAPE_PATHS = {
-  circle: (size, color) => (
-    <circle cx={size / 2} cy={size / 2} r={size / 2 - 2} fill={color} />
-  ),
-  square: (size, color) => (
-    <rect x={2} y={2} width={size - 4} height={size - 4} rx={6} fill={color} />
-  ),
-  triangle: (size, color) => {
-    const h = size - 4
-    const points = `${size / 2},2 ${size - 2},${h + 2} 2,${h + 2}`
-    return <polygon points={points} fill={color} />
-  },
-  star: (size, color) => {
-    const cx = size / 2, cy = size / 2, r1 = size / 2 - 2, r2 = r1 * 0.4
-    let points = ''
-    for (let i = 0; i < 5; i++) {
-      const outerAngle = (i * 72 - 90) * Math.PI / 180
-      const innerAngle = ((i * 72) + 36 - 90) * Math.PI / 180
-      points += `${cx + r1 * Math.cos(outerAngle)},${cy + r1 * Math.sin(outerAngle)} `
-      points += `${cx + r2 * Math.cos(innerAngle)},${cy + r2 * Math.sin(innerAngle)} `
-    }
-    return <polygon points={points.trim()} fill={color} />
-  },
-  heart: (size, color) => (
-    <path
-      d={`M${size / 2},${size * 0.85} C${size * 0.1},${size * 0.55} ${size * 0.0},${size * 0.25} ${size * 0.25},${size * 0.15} C${size * 0.38},${size * 0.08} ${size * 0.48},${size * 0.18} ${size / 2},${size * 0.32} C${size * 0.52},${size * 0.18} ${size * 0.62},${size * 0.08} ${size * 0.75},${size * 0.15} C${size * 1.0},${size * 0.25} ${size * 0.9},${size * 0.55} ${size / 2},${size * 0.85}Z`}
-      fill={color}
-    />
-  ),
-  diamond: (size, color) => {
-    const cx = size / 2, cy = size / 2, rx = size / 2 - 2, ry = size / 2 - 2
-    const points = `${cx},${cy - ry} ${cx + rx},${cy} ${cx},${cy + ry} ${cx - rx},${cy}`
-    return <polygon points={points} fill={color} />
-  },
-}
-
-const SHAPE_NAMES = Object.keys(SHAPE_PATHS)
-
 const SHAPE_EMOJIS = {
   circle: '⬤',
   square: '■',
@@ -454,12 +417,8 @@ function getColorMix(c1, c2) {
   return mixes[key] || null
 }
 
-function ShapeSVG({ shape, size, color }) {
-  return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-      {SHAPE_PATHS[shape](size, color)}
-    </svg>
-  )
+function ShapePiece({ shape, size, color }) {
+  return <GamePiece type="shape" value={shape} color={color} size={size} fallback={SHAPE_EMOJIS[shape]} className="game-art" />
 }
 
 // ─── Pattern level generator ────────────────────────────────────────────────
@@ -575,114 +534,6 @@ const s = {
     flexDirection: 'column',
     overflow: 'hidden',
   },
-  // Home
-  home: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '24px 20px',
-    gap: '20px',
-    overflow: 'auto',
-    position: 'relative',
-  },
-  title: {
-    fontSize: 'clamp(48px, 12vw, 80px)',
-    fontWeight: 900,
-    background: 'linear-gradient(135deg, #FF8A80, #CE93D8, #81D4FA)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    backgroundClip: 'text',
-    letterSpacing: '-1px',
-    lineHeight: 1,
-  },
-  subtitle: {
-    fontSize: 'clamp(16px, 4vw, 22px)',
-    fontWeight: 600,
-    color: '#9E8DAE',
-    marginTop: '-8px',
-  },
-  toyGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '12px',
-    width: '100%',
-    maxWidth: '400px',
-  },
-  toyButton: (idx) => ({
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '8px',
-    padding: '16px 8px',
-    borderRadius: '24px',
-    border: 'none',
-    background: 'rgba(255,255,255,0.75)',
-    backdropFilter: 'blur(8px)',
-    boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
-    cursor: 'pointer',
-    textAlign: 'center',
-    aspectRatio: '1',
-    animation: `float 3s ease-in-out infinite, fadeSlideIn 0.5s ease-out ${idx * 0.1}s both`,
-    transition: 'transform 0.2s, box-shadow 0.2s',
-    WebkitTapHighlightColor: 'transparent',
-  }),
-  toyIcon: {
-    fontSize: 'clamp(32px, 8vw, 44px)',
-    lineHeight: 1,
-    flexShrink: 0,
-  },
-  toyLabel: {
-    fontSize: 'clamp(13px, 3.5vw, 16px)',
-    fontWeight: 800,
-    color: '#5D4E6D',
-    lineHeight: 1.2,
-  },
-  badge: {
-    position: 'absolute',
-    top: '16px',
-    left: '16px',
-    background: 'linear-gradient(135deg, #FFE082, #FFAB91)',
-    color: '#7B5E3B',
-    fontWeight: 800,
-    fontSize: '13px',
-    padding: '6px 14px',
-    borderRadius: '20px',
-    boxShadow: '0 2px 10px rgba(255,171,145,0.3)',
-    animation: 'popIn 0.6s ease-out',
-  },
-  installChip: {
-    position: 'absolute',
-    top: '16px',
-    right: '16px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    background: 'rgba(255,255,255,0.85)',
-    backdropFilter: 'blur(8px)',
-    color: '#5D4E6D',
-    fontWeight: 700,
-    fontSize: '12px',
-    padding: '6px 14px',
-    borderRadius: '20px',
-    border: 'none',
-    boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
-    animation: 'popIn 0.6s ease-out 0.2s both',
-    cursor: 'pointer',
-    WebkitTapHighlightColor: 'transparent',
-    transition: 'transform 0.2s, box-shadow 0.2s',
-  },
-  footer: {
-    fontSize: '12px',
-    fontWeight: 600,
-    color: '#BBA8CC',
-    textAlign: 'center',
-    lineHeight: 1.6,
-    padding: '8px 0',
-  },
-
   // Nav bar
   nav: {
     display: 'flex',
@@ -935,7 +786,7 @@ function ShapePlayground({ onBack }) {
             onClick={() => addShape(name)}
             aria-label={`Add ${name}`}
           >
-            <ShapeSVG shape={name} size={36} color={COLORS[SHAPE_NAMES.indexOf(name) % COLORS.length]} />
+            <ShapePiece shape={name} size={36} color={COLORS[SHAPE_NAMES.indexOf(name) % COLORS.length]} />
           </button>
         ))}
       </div>
@@ -972,7 +823,7 @@ function ShapePlayground({ onBack }) {
             onMouseDown={(e) => handlePointerDown(e, item.id)}
             onTouchStart={(e) => handlePointerDown(e, item.id)}
           >
-            <ShapeSVG shape={item.shape} size={item.size} color={item.color} />
+            <ShapePiece shape={item.shape} size={item.size} color={item.color} />
           </div>
         ))}
 
@@ -1044,12 +895,12 @@ function PatternGame({ onBack }) {
         <div style={s.sequenceRow}>
           {data.sequence.map((item, i) => (
             <div key={i} style={{ ...s.seqItem, animationDelay: `${i * 0.08}s` }}>
-              <ShapeSVG shape={item.shape} size={36} color={item.color} />
+              <ShapePiece shape={item.shape} size={36} color={item.color} />
             </div>
           ))}
           <div style={s.mystery}>
             {chosen === 'correct' ? (
-              <ShapeSVG shape={data.answer.shape} size={36} color={data.answer.color} />
+              <ShapePiece shape={data.answer.shape} size={36} color={data.answer.color} />
             ) : '?'}
           </div>
         </div>
@@ -1065,7 +916,7 @@ function PatternGame({ onBack }) {
                 onClick={() => handleChoice(i)}
                 aria-label={`Choice ${i + 1}: ${item.shape}`}
               >
-                <ShapeSVG shape={item.shape} size={44} color={item.color} />
+                <ShapePiece shape={item.shape} size={44} color={item.color} />
               </button>
             )
           })}
@@ -1109,15 +960,9 @@ function LetterLand({ onBack }) {
           alignItems: 'center', justifyContent: 'center',
           padding: '20px', gap: '16px',
         }}>
-          <div style={{
-            fontSize: 'clamp(80px, 25vw, 140px)', fontWeight: 900,
-            color: COLORS[currentIdx % COLORS.length],
-            animation: 'popIn 0.3s ease-out', lineHeight: 1,
-          }}>
-            {selected}
-          </div>
+          <GamePiece value={selected} color={COLORS[currentIdx % COLORS.length]} size={138} className="game-art" />
           <div style={{ fontSize: '64px', animation: 'popIn 0.3s ease-out 0.1s both' }}>
-            {currentItem.emoji}
+            <GamePiece value={currentItem.emoji} color="#a985c6" size={76} className="game-art" />
           </div>
           <div style={{
             fontSize: 'clamp(24px, 6vw, 36px)', fontWeight: 800,
@@ -1261,7 +1106,7 @@ function CountingGarden({ onBack }) {
               pointerEvents: 'none',
             }}
           >
-            {item.emoji}
+            <GamePiece value={item.emoji} color="#77b975" size={48} className="game-art" />
           </div>
         ))}
 
@@ -1408,7 +1253,7 @@ function StoryTime({ onBack }) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', width: '100%', maxWidth: '400px' }}>
               {charGrid.map((c, i) => (
                 <button key={c.name} style={storyChoiceStyle(i)} onClick={() => pickCharacter(c)}>
-                  <span style={{ fontSize: '36px' }}>{c.emoji}</span>
+                  <GamePiece value={c.emoji} color="#b393ce" size={54} className="game-art" />
                   <span style={{ fontSize: '14px', fontWeight: 700, color: '#5D4E6D' }}>{c.name}</span>
                 </button>
               ))}
@@ -1424,7 +1269,7 @@ function StoryTime({ onBack }) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', width: '100%', maxWidth: '400px' }}>
               {placeGrid.map((p, i) => (
                 <button key={p.name} style={storyChoiceStyle(i)} onClick={() => pickPlace(p)}>
-                  <span style={{ fontSize: '36px' }}>{p.emoji}</span>
+                  <GamePiece value={p.emoji} color="#b393ce" size={54} className="game-art" />
                   <span style={{ fontSize: '12px', fontWeight: 700, color: '#5D4E6D', textTransform: 'capitalize' }}>{p.name}</span>
                 </button>
               ))}
@@ -1440,7 +1285,7 @@ function StoryTime({ onBack }) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', width: '100%', maxWidth: '400px' }}>
               {actionGrid.map((a, i) => (
                 <button key={a.name} style={storyChoiceStyle(i)} onClick={() => pickAction(a)}>
-                  <span style={{ fontSize: '36px' }}>{a.emoji}</span>
+                  <GamePiece value={a.emoji} color="#b393ce" size={54} className="game-art" />
                   <span style={{ fontSize: '12px', fontWeight: 700, color: '#5D4E6D' }}>{a.name}</span>
                 </button>
               ))}
@@ -1465,7 +1310,7 @@ function StoryTime({ onBack }) {
                 textAlign: 'center', fontSize: '60px', marginBottom: '16px',
                 animation: 'popIn 0.4s ease-out',
               }}>
-                {character.emoji} {place.emoji} {action.emoji}
+                {[character, place, action].map((piece, index) => <GamePiece key={index} value={piece.emoji} color={['#dc9ab6', '#87bcaf', '#be9fdf'][index]} size={74} className="game-art" />)}
               </div>
               <p style={{
                 fontSize: 'clamp(16px, 4.5vw, 22px)', fontWeight: 700,
@@ -1589,13 +1434,13 @@ function ColorDiscovery({ onBack }) {
           <div style={{
             width: '80px', height: '80px', borderRadius: '50%',
             border: selected[0] ? 'none' : '3px dashed #CE93D8',
-            background: selected[0] ? selected[0].color : 'rgba(206,147,216,0.1)',
+            background: selected[0] ? '#fff7' : 'rgba(206,147,216,0.1)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: '28px', color: '#CE93D8',
             animation: selected[0] ? 'popIn 0.3s ease-out' : 'none',
             boxShadow: selected[0] ? `0 4px 20px ${selected[0].color}44` : 'none',
           }}>
-            {!selected[0] && '?'}
+            {selected[0] ? <GamePiece type="shape" value="circle" color={selected[0].color} size={72} className="game-art" /> : '?'}
           </div>
 
           <span style={{ fontSize: '28px', fontWeight: 900, color: '#CE93D8' }}>+</span>
@@ -1603,13 +1448,13 @@ function ColorDiscovery({ onBack }) {
           <div style={{
             width: '80px', height: '80px', borderRadius: '50%',
             border: selected[1] ? 'none' : '3px dashed #CE93D8',
-            background: selected[1] ? selected[1].color : 'rgba(206,147,216,0.1)',
+            background: selected[1] ? '#fff7' : 'rgba(206,147,216,0.1)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: '28px', color: '#CE93D8',
             animation: selected[1] ? 'popIn 0.3s ease-out' : 'none',
             boxShadow: selected[1] ? `0 4px 20px ${selected[1].color}44` : 'none',
           }}>
-            {!selected[1] && '?'}
+            {selected[1] ? <GamePiece type="shape" value="circle" color={selected[1].color} size={72} className="game-art" /> : '?'}
           </div>
 
           {selected.length === 2 && (
@@ -1617,14 +1462,14 @@ function ColorDiscovery({ onBack }) {
               <span style={{ fontSize: '28px', fontWeight: 900, color: '#CE93D8' }}>=</span>
               <div style={{
                 width: '80px', height: '80px', borderRadius: '50%',
-                background: showResult ? result.color : 'rgba(206,147,216,0.1)',
+                background: showResult ? '#fff7' : 'rgba(206,147,216,0.1)',
                 border: showResult ? 'none' : '3px dashed #CE93D8',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '28px', color: '#CE93D8',
                 animation: showResult ? 'celebrate 0.5s ease' : 'none',
                 boxShadow: showResult ? `0 4px 20px ${result.color}44` : 'none',
               }}>
-                {!showResult && '?'}
+                {showResult ? <GamePiece type="shape" value="circle" color={result.color} size={72} className="game-art" /> : '?'}
               </div>
             </>
           )}
@@ -1647,12 +1492,7 @@ function ColorDiscovery({ onBack }) {
                 }}
                 onClick={() => pickColor(c)}
               >
-                <div style={{
-                  width: '48px', height: '48px', borderRadius: '50%',
-                  background: c.color,
-                  border: c.name === 'White' ? '2px solid #E0E0E0' : 'none',
-                  boxShadow: `0 2px 8px ${c.color}44`,
-                }} />
+                <GamePiece type="shape" value="circle" color={c.color} size={53} className="game-art" />
                 <span style={{ fontSize: '14px', fontWeight: 700, color: '#5D4E6D' }}>{c.name}</span>
               </button>
             ))}
@@ -1976,7 +1816,7 @@ function MixAndMatch({ onBack }) {
             animation: selected[0] ? 'popIn 0.3s ease-out' : 'none',
             boxShadow: selected[0] ? '0 4px 20px rgba(0,0,0,0.06)' : 'none',
           }}>
-            {selected[0] ? selected[0].emoji : '?'}
+            {selected[0] ? <GamePiece value={selected[0].emoji} color="#a787d1" size={65} className="game-art" /> : '?'}
           </div>
 
           <span style={{ fontSize: '28px', fontWeight: 900, color: '#CE93D8' }}>+</span>
@@ -1991,7 +1831,7 @@ function MixAndMatch({ onBack }) {
             animation: selected[1] ? 'popIn 0.3s ease-out' : 'none',
             boxShadow: selected[1] ? '0 4px 20px rgba(0,0,0,0.06)' : 'none',
           }}>
-            {selected[1] ? selected[1].emoji : '?'}
+            {selected[1] ? <GamePiece value={selected[1].emoji} color="#a787d1" size={65} className="game-art" /> : '?'}
           </div>
 
           {/* Result slot (appears after two are picked) */}
@@ -2007,7 +1847,7 @@ function MixAndMatch({ onBack }) {
                 animation: showResult ? (result.label.includes('Hmm') ? 'shake 0.4s ease' : 'celebrate 0.5s ease') : 'none',
                 boxShadow: showResult ? '0 4px 20px rgba(0,0,0,0.06)' : 'none',
               }}>
-                {showResult ? result.emoji : '?'}
+                {showResult ? <GamePiece value={result.emoji} color="#d087ab" size={65} className="game-art" /> : '?'}
               </div>
             </>
           )}
@@ -2039,7 +1879,7 @@ function MixAndMatch({ onBack }) {
                   onClick={() => pickItem(item)}
                 >
                   <span style={{ fontSize: 'clamp(32px, 8vw, 44px)', lineHeight: 1, pointerEvents: 'none' }}>
-                    {item.emoji}
+                    <GamePiece value={item.emoji} color="#baa0df" size={55} className="game-art" />
                   </span>
                   <span style={{
                     fontSize: 'clamp(11px, 3vw, 14px)', fontWeight: 700,
@@ -2167,15 +2007,7 @@ function ToddlerTime({ onBack }) {
     setActivityIndex(prev => (prev - 1 + TIME_ACTIVITIES.length) % TIME_ACTIVITIES.length)
   }
 
-  // Calculate hour hand angle (30 degrees per hour)
   const displayHour = activity.hour
-  const hourAngle = (displayHour % 12) * 30
-
-  // The clock SVG
-  const clockSize = 220
-  const cx = clockSize / 2
-  const cy = clockSize / 2
-  const clockRadius = clockSize / 2 - 10
 
   return (
     <div style={s.app}>
@@ -2226,63 +2058,7 @@ function ToddlerTime({ onBack }) {
           boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
           animation: animating ? 'popIn 0.3s ease-out' : 'none',
         }}>
-          <svg width={clockSize} height={clockSize} viewBox={`0 0 ${clockSize} ${clockSize}`}>
-            {/* Clock circle */}
-            <circle cx={cx} cy={cy} r={clockRadius} fill="white" stroke="#E0E0E0" strokeWidth="3" />
-
-            {/* Hour numbers */}
-            {[...Array(12)].map((_, i) => {
-              const num = i + 1
-              const angle = (num * 30 - 90) * Math.PI / 180
-              const x = cx + (clockRadius - 22) * Math.cos(angle)
-              const y = cy + (clockRadius - 22) * Math.sin(angle)
-              const isActive = num === displayHour % 12 || (displayHour === 12 && num === 12)
-              return (
-                <text
-                  key={num}
-                  x={x}
-                  y={y}
-                  textAnchor="middle"
-                  dominantBaseline="central"
-                  fill={isActive ? '#CE93D8' : '#5D4E6D'}
-                  fontSize={isActive ? '22' : '18'}
-                  fontWeight={isActive ? '900' : '700'}
-                  fontFamily="Nunito, sans-serif"
-                >
-                  {num}
-                </text>
-              )
-            })}
-
-            {/* Hour tick marks */}
-            {[...Array(12)].map((_, i) => {
-              const angle = (i * 30) * Math.PI / 180
-              const x1 = cx + (clockRadius - 4) * Math.cos(angle)
-              const y1 = cy + (clockRadius - 4) * Math.sin(angle)
-              const x2 = cx + (clockRadius - 10) * Math.cos(angle)
-              const y2 = cy + (clockRadius - 10) * Math.sin(angle)
-              return (
-                <line key={`tick-${i}`} x1={x1} y1={y1} x2={x2} y2={y2}
-                  stroke="#BDBDBD" strokeWidth="2" strokeLinecap="round" />
-              )
-            })}
-
-            {/* Hour hand */}
-            <line
-              x1={cx}
-              y1={cy}
-              x2={cx + 55 * Math.cos((hourAngle - 90) * Math.PI / 180)}
-              y2={cy + 55 * Math.sin((hourAngle - 90) * Math.PI / 180)}
-              stroke="#CE93D8"
-              strokeWidth="6"
-              strokeLinecap="round"
-              style={{ transition: 'x2 0.5s ease, y2 0.5s ease' }}
-            />
-
-            {/* Center dot */}
-            <circle cx={cx} cy={cy} r="8" fill="#CE93D8" />
-            <circle cx={cx} cy={cy} r="4" fill="white" />
-          </svg>
+          <GamePiece type="clock" value={displayHour} size={220} fallback={`${displayHour}:00`} className="game-art" />
         </div>
 
         {/* Time display */}
@@ -2452,7 +2228,7 @@ function DinoWorld({ onBack }) {
               filter: bouncingDinos[idx] ? 'drop-shadow(0 0 8px rgba(0,0,0,0.2))' : 'none',
               transition: 'filter 0.2s',
             }}>
-              {dino.emoji}
+              <GamePiece type="dino" value={dino.fullName} color={dino.color} size={82} className="game-art" fallback={dino.emoji} />
             </span>
             <div style={{
               fontSize: 'clamp(13px, 3.5vw, 16px)',
@@ -2574,7 +2350,7 @@ export default function App() {
     setShowInstallTip(prev => !prev)
   }
 
-  if (screen === 'royal-poop-3d') return <Suspense fallback={<div style={{ padding: 32 }}>Loading 3D game…</div>}><RoyalPoopBattle3D onBack={() => setScreen('home')} /></Suspense>
+
   if (screen === 'royal-poop') return <RoyalPoopBattle onBack={() => setScreen('home')} />
 
   if (screen === 'shapes') {
@@ -2613,93 +2389,19 @@ export default function App() {
     return <DinoWorld onBack={() => setScreen('home')} />
   }
 
-  return (
-    <div style={s.app}>
-      <div style={s.home}>
-        <div style={s.badge}>Free to Play 🎈</div>
-
-        {installPrompt ? (
-          <button
-            style={s.installChip}
-            onClick={handleInstallClick}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.12)' }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
-          >
-            <span>📲</span>
-            <span>Add to Home Screen</span>
-          </button>
-        ) : (
-          <div style={{ position: 'absolute', top: '16px', right: '16px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px', zIndex: 10 }}>
-            <button
-              style={{ ...s.installChip, position: 'relative', top: 'auto', right: 'auto', cursor: isInstalled ? 'default' : 'pointer' }}
-              onClick={handleOfflineChipClick}
-              onMouseEnter={(e) => { if (!isInstalled) { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.12)' } }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
-            >
-              <span>{isInstalled ? '✅' : '📡'}</span>
-              <span>{isInstalled ? 'Installed' : 'Works Offline'}</span>
-            </button>
-            {showInstallTip && !isInstalled && (
-              <div style={{
-                background: 'white',
-                borderRadius: '12px',
-                padding: '12px 16px',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-                fontSize: '13px',
-                lineHeight: '1.5',
-                color: '#5D4E6D',
-                maxWidth: '220px',
-                animation: 'popIn 0.3s ease-out',
-              }}>
-                <strong>Add to Home Screen</strong><br />
-                Tap your browser's <strong>Share</strong> or <strong>Menu</strong> button, then choose <strong>"Add to Home Screen"</strong>.
-              </div>
-            )}
-          </div>
-        )}
-
-        <h1 style={s.title}>BRIE</h1>
-        <p style={s.subtitle}>Play, explore &amp; discover</p>
-
-        <div style={s.toyGrid}>
-          {[
-            { icon: '💩', label: 'Royal Poop Battle', screen: 'royal-poop' },
-            { icon: '🏰', label: 'Royal Battle 3D (Preview)', screen: 'royal-poop-3d' },
-            { icon: '🔷', label: 'Shapes', screen: 'shapes' },
-            { icon: '🌟', label: 'Patterns', screen: 'patterns' },
-            { icon: '🔤', label: 'Letters', screen: 'letters' },
-            { icon: '🌻', label: 'Counting', screen: 'counting' },
-            { icon: '📖', label: 'Stories', screen: 'story' },
-            { icon: '🎨', label: 'Colors', screen: 'colors' },
-            { icon: '🧩', label: 'Mix & Match', screen: 'combine' },
-            { icon: '🕐', label: 'Time', screen: 'time' },
-            { icon: '🦕', label: 'Dinos', screen: 'dinos' },
-            { icon: '🛒', label: 'Little Shop', screen: 'cashier' },
-          ].map((game, idx) => (
-            <button
-              key={game.screen}
-              style={s.toyButton(idx)}
-              onClick={() => {
-                playTap()
-                if (game.screen === 'cashier') {
-                  window.location.assign(`${import.meta.env.BASE_URL}cashier.html`)
-                } else {
-                  setScreen(game.screen)
-                }
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 6px 28px rgba(0,0,0,0.1)' }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
-            >
-              <span style={s.toyIcon}>{game.icon}</span>
-              <div style={s.toyLabel}>{game.label}</div>
-            </button>
-          ))}
-        </div>
-
-        <footer style={s.footer}>
-          No ads · No rules · No data collected · Just play 🌈
-        </footer>
-      </div>
-    </div>
-  )
+  return <Playroom
+    onOpen={id => {
+      playTap()
+      if (id === 'cashier') {
+        window.location.assign(`${import.meta.env.BASE_URL}cashier.html`)
+      } else {
+        setScreen(id)
+      }
+    }}
+    installPrompt={installPrompt}
+    isInstalled={isInstalled}
+    showInstallTip={showInstallTip}
+    onInstall={handleInstallClick}
+    onToggleTip={handleOfflineChipClick}
+  />
 }

@@ -5,9 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#FEF3E8">
 <title>Little Shop · BRIE</title>
+<link rel="stylesheet" href="/src/brie-world.css">
 <style>
 * { box-sizing: border-box; }
-body { margin: 0; color: #5D4E6D; background: linear-gradient(135deg, #FEF3E8, #F3E5F5, #E3F2FD); min-height: 100vh; font-family: 'Nunito', ui-rounded, system-ui, sans-serif; }
+body { margin: 0; color: #5D4E6D; background: radial-gradient(ellipse at 78% 2%, #fde7dc, transparent 45%), #f8f3fc; min-height: 100vh; font-family: 'Nunito', ui-rounded, system-ui, sans-serif; }
 button, a { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 button { font: inherit; font-weight: 800; color: inherit; cursor: pointer; border: 0; border-radius: 18px; padding: 14px 20px; min-height: 48px; background: white; }
 button:disabled { cursor: default; opacity: .55; }
@@ -19,7 +20,8 @@ nav strong { flex: 1; font-size: 20px; }
 nav button { padding: 10px; font-size: 14px; }
 main { width: min(100%, 850px); margin: auto; padding: 22px 16px 32px; }
 header { text-align: center; }
-.eyebrow { font-size: 12px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
+#shop-art { line-height: 0; }
+.product img { display: block; }
 h1 { font-size: clamp(30px, 6vw, 46px); margin: 6px 0; }
 p { line-height: 1.5; margin: 8px 0 16px; }
 .roles { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 16px 0; }
@@ -55,13 +57,21 @@ h2 { margin: 0 0 8px; font-size: clamp(22px, 4vw, 28px); }
 <body>
 <nav aria-label="Game navigation"><a href="./" aria-label="Back to games">←</a><strong>🛒 Little Shop</strong><button id="sound" aria-pressed="false">Sound on</button></nav>
 <main>
-<header><div class="eyebrow">A little shop for two</div><h1>Let's play shop!</h1><p>Pick, beep, count. Then swap!</p></header>
+<header><div id="shop-art" aria-hidden="true"></div><h1>Let's play shop!</h1><p>Pick, beep, count. Then swap!</p></header>
 <div id="roles" class="roles"></div>
 <ol class="steps" aria-label="Checkout steps"><li>1 · Pick</li><li>2 · Scan</li><li>3 · Pay</li><li>4 · Yay!</li></ol>
 <section id="game" class="panel" aria-labelledby="turn-title"></section>
 <p id="status" role="status" aria-live="polite"></p>
 </main>
-<script>
+<script type="module">
+import { productModel, toyModel } from "./src/toyModels.js";
+import { toyPreview } from "./src/toyPreview.js";
+
+function artwork(key, fallback, model, size) {
+  const source = toyPreview(key, model);
+  return source ? `<img src="${source}" width="${size}" height="${size}" alt="" draggable="false">` : fallback;
+}
+document.querySelector("#shop-art").innerHTML = artwork("cashier", "🛒", () => toyModel("cashier"), 98);
 // All play state stays in memory and resets when this page is left or reloaded.
 const products = [
   { name: 'Apple', emoji: '🍎', price: 1, color: '#FF8A80' },
@@ -108,14 +118,14 @@ function render(focusHeading = false) {
   if (phase === 0) {
     game.innerHTML = `<h2 id="turn-title" tabindex="-1">${customer}, let's go shopping!</h2>
       <p>Choose 1, 2, or 3 things. Ask ${cashier}, “Can I buy these, please?”</p>
-      <div class="shelf">${products.map((item, index) => `<button class="product" data-add="${index}" style="background:${item.color}" ${basket.length === 3 ? 'disabled' : ''} aria-label="Add ${item.name}, ${coinLabel(item.price)}"><span class="emoji" aria-hidden="true">${item.emoji}</span><span>${item.name}</span><span class="price">${'🪙'.repeat(item.price)} ${coinLabel(item.price)}</span></button>`).join('')}</div>
+      <div class="shelf">${products.map((item, index) => `<button class="product" data-add="${index}" style="background:${item.color}" ${basket.length === 3 ? 'disabled' : ''} aria-label="Add ${item.name}, ${coinLabel(item.price)}"><span class="emoji" aria-hidden="true">${artwork(item.name, item.emoji, () => productModel(item.name), 62)}</span><span>${item.name}</span><span class="price">${'🪙'.repeat(item.price)} ${coinLabel(item.price)}</span></button>`).join('')}</div>
       <strong>🧺 My basket · ${basket.length} / 3</strong>
       <div class="basket">${basket.length ? basket.map((item, index) => `<button data-remove="${index}" aria-label="Remove ${item.name} from basket">${item.emoji} ${item.name} ×</button>`).join('') : '<span>Tap something yummy to add it.</span>'}</div>
       <div class="actions"><button class="primary" data-action="scan" ${basket.length ? '' : 'disabled'}>Ready for ${cashier} →</button><button class="quiet" data-action="swap">Swap roles</button></div>`;
   } else if (phase === 1) {
     const scanned = basket.filter(item => item.scanned);
     game.innerHTML = `<h2 id="turn-title" tabindex="-1">${cashier}, you're the cashier!</h2><p>Say “Hello!” Tap each item to scan it. Beep!</p>
-      <div class="shelf">${basket.map((item, index) => `<button class="product" data-scan="${index}" style="background:${item.scanned ? '#A5D6A7' : item.color}" ${item.scanned ? 'disabled' : ''} aria-label="${item.scanned ? 'Scanned' : 'Scan'} ${item.name}"><span class="emoji" aria-hidden="true">${item.emoji}</span><span>${item.name}</span><span class="price">${item.scanned ? '✓ Scanned' : coinLabel(item.price)}</span></button>`).join('')}</div>
+      <div class="shelf">${basket.map((item, index) => `<button class="product" data-scan="${index}" style="background:${item.scanned ? '#A5D6A7' : item.color}" ${item.scanned ? 'disabled' : ''} aria-label="${item.scanned ? 'Scanned' : 'Scan'} ${item.name}"><span class="emoji" aria-hidden="true">${artwork(item.name, item.emoji, () => productModel(item.name), 62)}</span><span>${item.name}</span><span class="price">${item.scanned ? '✓ Scanned' : coinLabel(item.price)}</span></button>`).join('')}</div>
       <div class="display">${scanned.length} of ${basket.length} scanned<span class="total">${coinLabel(scanned.reduce((sum, item) => sum + item.price, 0))}</span><span aria-hidden="true">${scanned.map(item => '🪙'.repeat(item.price)).join(' ')}</span></div>
       <div class="actions"><button class="primary" data-action="pay" ${scanned.length === basket.length ? '' : 'disabled'}>Ask for ${coinLabel(total())} →</button><button class="quiet" data-action="restart">Start this shop again</button></div>`;
   } else if (phase === 2) {
