@@ -81,3 +81,24 @@
 .bluey-rooms button.room-clue { background: #ffe59b; border-color: #bc8d42; }
 .bluey-listen { margin-top: 15px; padding-inline: 16px; }
 .bluey-listen:disabled { opacity: .62; cursor: default; }
+
+.bluey-room { touch-action: pan-y; }
+.bluey-xylophone {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin: 15px auto 0;
+  max-width: 260px;
+}
+.bluey-xylophone button {
+  flex: 1;
+  min-height: 47px;
+  border: 2px solid #fff8;
+  border-radius: 12px;
+  box-shadow: 0 3px 0 #5553;
+  font: inherit; font-size: 21px; font-weight: 900;
+  color: #2f4260;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.bluey-xylophone .played { transform: translateY(2px); box-shadow: inset 0 0 0 2px #364661; }

@@ -244,6 +244,9 @@ export default function Bluey({ onBack }) {
   const [checked, setChecked] = useState({})
   const [lastProp, setLastProp] = useState(null)
   const [clue, setClue] = useState(false)
+  const [walkTarget, setWalkTarget] = useState(null)
+  const [note, setNote] = useState(null)
+  const gesture = useRef(null)
   const friend = round % 2 === 0 ? 'Bingo' : 'Bluey'
   const seeker = friend === 'Bingo' ? 'Bluey' : 'Bingo'
   const room = rooms[roomIndex]
@@ -251,7 +254,7 @@ export default function Bluey({ onBack }) {
   const rightRoom = roomIndex === hiding.room
   const found = Boolean(checked[hiding.room]?.includes(hiding.prop))
   const hint = rightRoom && clue && !found
-  const guidePosition = lastProp === null ? [-2.32, -2.26] : [positions[lastProp][0] - .68, positions[lastProp][1] - .61]
+  const guidePosition = walkTarget ?? (lastProp === null ? [-2.32, -2.26] : [positions[lastProp][0] - .68, positions[lastProp][1] - .61])
   const startRef = useRef(null)
   const audioRef = useRef(null)
   const firstSpotRef = useRef(null)
@@ -284,6 +287,7 @@ export default function Bluey({ onBack }) {
 
   function search(index) {
     if (found || opened.includes(index)) return
+    setWalkTarget(null)
     setLastProp(index)
     setChecked({ ...checked, [roomIndex]: [...opened, index] })
     if (rightRoom && index === hiding.prop) {
@@ -297,6 +301,8 @@ export default function Bluey({ onBack }) {
 
   function moveTo(index) {
     setRoomIndex(index)
+    setWalkTarget(null)
+    setNote(null)
     setLastProp(null)
   }
 
@@ -307,6 +313,30 @@ export default function Bluey({ onBack }) {
     setLastProp(null)
     setClue(false)
     setRoomIndex(0)
+    setWalkTarget(null)
+    setNote(null)
+  }
+
+  function beginGesture(event) {
+    if (found || !event.isPrimary || event.target.closest('button')) return
+    gesture.current = { id: event.pointerId, x: event.clientX, y: event.clientY }
+    event.currentTarget.setPointerCapture(event.pointerId)
+  }
+
+  function endGesture(event) {
+    const start = gesture.current
+    if (start?.id !== event.pointerId) return
+    gesture.current = null
+    const dx = event.clientX - start.x
+    const dy = event.clientY - start.y
+    if (Math.abs(dx) > 44 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+      moveTo((roomIndex + (dx < 0 ? 1 : rooms.length - 1)) % rooms.length)
+      return
+    }
+    const bounds = event.currentTarget.getBoundingClientRect()
+    const x = (event.clientX - bounds.left) / bounds.width * 7 - 3.5
+    const y = 3.5 - (event.clientY - bounds.top) / bounds.height * 7
+    setWalkTarget([Math.max(-2.6, Math.min(2.6, x)), Math.max(-2.55, Math.min(.1, y))])
   }
 
   const message = found
@@ -337,7 +367,8 @@ export default function Bluey({ onBack }) {
             <span aria-hidden="true">{icon}</span>{name}
           </button>)}
         </nav>
-        <div className="bluey-room" aria-label={room.name}>
+        <div className="bluey-room" aria-label={room.name}
+          onPointerDown={beginGesture} onPointerUp={endGesture} onPointerCancel={() => { gesture.current = null }}>
           <Room key={roomIndex} room={room} guidePosition={guidePosition} friend={friend}
             opened={opened} hiding={rightRoom ? hiding.prop : -1} found={found} hint={hint} />
           <div className="bluey-spots">
@@ -357,6 +388,16 @@ export default function Bluey({ onBack }) {
             })}
           </div>
         </div>
+        {roomIndex === 1 && !found && <div className="bluey-xylophone" role="group" aria-label="Play the xylophone">
+          {['Red', 'Yellow', 'Green', 'Blue'].map((color, index) => <button key={color}
+            type="button" aria-label={`Play the ${color.toLowerCase()} key`}
+            className={note === index ? 'played' : undefined}
+            style={{ backgroundColor: ['#f39791', '#f5cf70', '#92c78b', '#91c3ed'][index] }}
+            onClick={() => {
+              setNote(index)
+              playNotes([[523, 659, 784, 1047][index]])
+            }}>♪</button>)}
+        </div>}
         {!found && <button className="bluey-listen" type="button" onClick={() => { playNotes([587, 740, 659]); setClue(true) }} disabled={clue}>Listen for a giggle</button>}
         {found && <button className="bluey-primary" type="button" ref={replayRef} onClick={() => {
           reset(round + 1)
