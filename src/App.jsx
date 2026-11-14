@@ -1,3 +1,4 @@
+import Bluey from './Bluey'
 import RoyalPoopBattle from './RoyalPoopBattle'
 import Playroom from './Playroom'
 import { GamePiece } from './ToyArt'
@@ -2350,6 +2351,8 @@ export default function App() {
     setShowInstallTip(prev => !prev)
   }
 
+
+  if (screen === 'bluey') return <Bluey onBack={() => setScreen('home')} />
 
   if (screen === 'royal-poop') return <RoyalPoopBattle onBack={() => setScreen('home')} />
 

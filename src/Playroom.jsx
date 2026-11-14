@@ -1,3 +1,4 @@
+import { BlueyArt } from './Bluey'
 import { ToyArt } from './ToyArt'
 
 const toys = [
@@ -29,6 +30,11 @@ export default function Playroom({ onOpen, installPrompt, isInstalled, showInsta
       <section className="world-hero">
         <div className="world-copy"><h1>Brie’s Playroom</h1><p>Play, explore &amp; discover.</p></div>
         <ToyArt kind="home" fallback="🏰" className="world-island" />
+      </section>
+      <section className="world-bluey" aria-label="Bluey games">
+        <button type="button" className="bluey-feature" onClick={() => onOpen('bluey')}>
+          <BlueyArt /><span><strong>Bluey</strong><small>Hide &amp; Seek</small></span><span aria-hidden="true">→</span>
+        </button>
       </section>
       <section aria-labelledby="playroom-games">
         <div className="world-section"><h2 id="playroom-games">Pick a game</h2></div>
