@@ -193,7 +193,7 @@ function Room({ room, opened, hiding, found, hint, friend, guidePosition }) {
     <hemisphereLight args={['#fff6e4', '#b9a1b7', 2.15]} />
     <directionalLight position={[-3, 6, 6]} color="#fff2d7" intensity={2.4} />
     <primitive object={backdrop} />
-    <SearchGuide model={guide} target={guidePosition} />
+    {guidePosition && <SearchGuide model={guide} target={guidePosition} />}
     {positions.map(([x, y], index) => {
       const { name } = spots[room.props[index]]
       const inspected = opened.includes(index)
@@ -246,14 +246,11 @@ export default function Bluey({ onBack }) {
   const [clue, setClue] = useState(false)
   const [walkTarget, setWalkTarget] = useState(null)
   const [note, setNote] = useState(null)
-  const gesture = useRef(null)
+  const houseRef = useRef(null)
   const friend = round % 2 === 0 ? 'Bingo' : 'Bluey'
   const seeker = friend === 'Bingo' ? 'Bluey' : 'Bingo'
-  const room = rooms[roomIndex]
-  const opened = checked[roomIndex] ?? []
   const rightRoom = roomIndex === hiding.room
   const found = Boolean(checked[hiding.room]?.includes(hiding.prop))
-  const hint = rightRoom && clue && !found
   const guidePosition = walkTarget ?? (lastProp === null ? [-2.32, -2.26] : [positions[lastProp][0] - .68, positions[lastProp][1] - .61])
   const startRef = useRef(null)
   const audioRef = useRef(null)
@@ -285,25 +282,20 @@ export default function Bluey({ onBack }) {
     requestAnimationFrame(() => firstSpotRef.current?.focus())
   }
 
-  function search(index) {
+  function search(room, index) {
+    const opened = checked[room] ?? []
     if (found || opened.includes(index)) return
+    setRoomIndex(room)
     setWalkTarget(null)
     setLastProp(index)
-    setChecked({ ...checked, [roomIndex]: [...opened, index] })
-    if (rightRoom && index === hiding.prop) {
+    setChecked({ ...checked, [room]: [...opened, index] })
+    if (room === hiding.room && index === hiding.prop) {
       playNotes([523, 659, 784])
       requestAnimationFrame(() => replayRef.current?.focus())
     } else {
       playNotes([392, 523])
       setClue(true)
     }
-  }
-
-  function moveTo(index) {
-    setRoomIndex(index)
-    setWalkTarget(null)
-    setNote(null)
-    setLastProp(null)
   }
 
   function reset(nextRound) {
@@ -315,27 +307,26 @@ export default function Bluey({ onBack }) {
     setRoomIndex(0)
     setWalkTarget(null)
     setNote(null)
+    if (houseRef.current) houseRef.current.scrollLeft = 0
   }
 
-  function beginGesture(event) {
-    if (found || !event.isPrimary || event.target.closest('button')) return
-    gesture.current = { id: event.pointerId, x: event.clientX, y: event.clientY }
-    event.currentTarget.setPointerCapture(event.pointerId)
-  }
-
-  function endGesture(event) {
-    const start = gesture.current
-    if (start?.id !== event.pointerId) return
-    gesture.current = null
-    const dx = event.clientX - start.x
-    const dy = event.clientY - start.y
-    if (Math.abs(dx) > 44 && Math.abs(dx) > Math.abs(dy) * 1.4) {
-      moveTo((roomIndex + (dx < 0 ? 1 : rooms.length - 1)) % rooms.length)
-      return
+  function trackScroll(event) {
+    const house = event.currentTarget
+    const roomWidth = house.firstElementChild.offsetWidth
+    const index = Math.min(rooms.length - 1, Math.round(house.scrollLeft / roomWidth))
+    if (index !== roomIndex) {
+      setRoomIndex(index)
+      setLastProp(null)
+      setWalkTarget(null)
     }
+  }
+
+  function walkTo(event, room) {
+    if (found || event.target.closest('button')) return
     const bounds = event.currentTarget.getBoundingClientRect()
     const x = (event.clientX - bounds.left) / bounds.width * 7 - 3.5
     const y = 3.5 - (event.clientY - bounds.top) / bounds.height * 7
+    setRoomIndex(room)
     setWalkTarget([Math.max(-2.6, Math.min(2.6, x)), Math.max(-2.55, Math.min(.1, y))])
   }
 
@@ -359,34 +350,37 @@ export default function Bluey({ onBack }) {
       {playing ? <section className="bluey-game" aria-labelledby="hide-title">
         <h1 id="hide-title">Hide &amp; Seek</h1>
         <p role="status" className="bluey-status">{message}</p>
-        <nav className="bluey-rooms" aria-label="Rooms">
-          {rooms.map(({ name, icon }, index) => <button key={name} type="button"
-            aria-current={roomIndex === index ? 'location' : undefined}
-            className={clue && !found && index === hiding.room && !rightRoom ? 'room-clue' : undefined}
-            onClick={() => moveTo(index)} disabled={found}>
-            <span aria-hidden="true">{icon}</span>{name}
-          </button>)}
-        </nav>
-        <div className="bluey-room" aria-label={room.name}
-          onPointerDown={beginGesture} onPointerUp={endGesture} onPointerCancel={() => { gesture.current = null }}>
-          <Room key={roomIndex} room={room} guidePosition={guidePosition} friend={friend}
-            opened={opened} hiding={rightRoom ? hiding.prop : -1} found={found} hint={hint} />
-          <div className="bluey-spots">
-            {positions.map(([x, y], index) => {
-              const { name, symbol } = spots[room.props[index]]
-              const inspected = opened.includes(index)
-              const isHint = hint && index === hiding.prop
-              const isFound = found && rightRoom && index === hiding.prop
-              return <button key={name} type="button" ref={index === 0 ? firstSpotRef : undefined}
-                style={{ left: `${50 + x / frame * 50}%`, top: `${50 - y / frame * 50}%` }}
-                className={`bluey-spot${inspected ? ' checked' : ''}${isHint ? ' sparkle' : ''}`}
-                aria-label={`Check the ${name.toLowerCase()}${isHint ? ', sparkling' : ''}`}
-                disabled={found || inspected} onClick={() => search(index)}>
-                <span className="bluey-prop-fallback" aria-hidden="true">{isFound ? '🐶' : symbol}</span>
-                <span>{isFound ? 'Found!' : inspected ? 'Empty' : name}</span>
-              </button>
-            })}
-          </div>
+        <div className="bluey-scroll-label"><span>‹</span>Swipe to explore<span>›</span></div>
+        <div className="bluey-house" ref={houseRef} tabIndex={0} role="region"
+          aria-label="House. Scroll sideways to explore." onScroll={trackScroll}>
+          {rooms.map((room, roomNumber) => {
+            const opened = checked[roomNumber] ?? []
+            const hidingHere = roomNumber === hiding.room
+            const hint = hidingHere && clue && !found
+            return <section className="bluey-room" key={room.name} aria-label={room.name}
+              onClick={event => walkTo(event, roomNumber)}>
+              <Room room={room} guidePosition={roomIndex === roomNumber ? guidePosition : null} friend={friend}
+                opened={opened} hiding={hidingHere ? hiding.prop : -1} found={found} hint={hint} />
+              <h2 className="bluey-room-name">{room.name}</h2>
+              <div className="bluey-spots">
+                {positions.map(([x, y], index) => {
+                  const { name, symbol } = spots[room.props[index]]
+                  const inspected = opened.includes(index)
+                  const isHint = hint && index === hiding.prop
+                  const isFound = found && hidingHere && index === hiding.prop
+                  return <button key={name} type="button"
+                    ref={roomNumber === 0 && index === 0 ? firstSpotRef : undefined}
+                    style={{ left: `${50 + x / frame * 50}%`, top: `${50 - y / frame * 50}%` }}
+                    className={`bluey-spot${inspected ? ' checked' : ''}${isHint ? ' sparkle' : ''}`}
+                    aria-label={`Check the ${name.toLowerCase()}${isHint ? ', sparkling' : ''}`}
+                    disabled={found || inspected} onClick={() => search(roomNumber, index)}>
+                    <span className="bluey-prop-fallback" aria-hidden="true">{isFound ? '🐶' : symbol}</span>
+                    <span>{isFound ? 'Found!' : inspected ? 'Empty' : name}</span>
+                  </button>
+                })}
+              </div>
+            </section>
+          })}
         </div>
         {roomIndex === 1 && !found && <div className="bluey-xylophone" role="group" aria-label="Play the xylophone">
           {['Red', 'Yellow', 'Green', 'Blue'].map((color, index) => <button key={color}

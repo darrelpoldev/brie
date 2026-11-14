@@ -69,20 +69,15 @@
   .bluey-shell { padding-top: 8px; }
 }
 
-.bluey-rooms { display: flex; justify-content: center; gap: 6px; margin: 0 auto 12px; max-width: 460px; }
-.bluey-rooms button, .bluey-listen {
+.bluey-listen {
   min-height: 44px; border: 1px solid #aecbdc; color: #275675; background: #edf7fc;
   border-radius: 13px; padding: 4px 8px; font: inherit; font-size: 13px; font-weight: 900;
   cursor: pointer; touch-action: manipulation;
 }
-.bluey-rooms button { flex: 1; }
-.bluey-rooms button span { margin-right: 4px; }
-.bluey-rooms button[aria-current] { background: #286996; color: white; border-color: #286996; }
-.bluey-rooms button.room-clue { background: #ffe59b; border-color: #bc8d42; }
 .bluey-listen { margin-top: 15px; padding-inline: 16px; }
 .bluey-listen:disabled { opacity: .62; cursor: default; }
 
-.bluey-room { touch-action: pan-y; }
+
 .bluey-xylophone {
   display: flex;
   justify-content: center;
@@ -102,3 +97,27 @@
   touch-action: manipulation;
 }
 .bluey-xylophone .played { transform: translateY(2px); box-shadow: inset 0 0 0 2px #364661; }
+
+
+.bluey-scroll-label {
+  display: flex; justify-content: center; align-items: center; gap: 15px;
+  font-weight: 900; margin-bottom: 8px; color: #315e7a;
+}
+.bluey-scroll-label span { font-size: 24px; line-height: 1; }
+.bluey-house {
+  display: flex; width: min(100%, 560px); margin: auto; overflow-x: auto; overflow-y: hidden;
+  border: 5px solid #fff4d8; border-radius: 27px; background: #e2b68f;
+  box-shadow: 0 6px 0 #bd9069, 0 17px 28px #785b5633;
+  overscroll-behavior-inline: contain;
+}
+.bluey-house .bluey-room {
+  flex: 0 0 84%; width: auto; margin: 0; border: 0; border-radius: 0;
+  box-shadow: none;
+}
+.bluey-room-name {
+  position: absolute; pointer-events: none; top: 8px; left: 10px;
+  font-size: 12px; background: #fff5e1; padding: 3px 8px; border-radius: 99px;
+}
+@media (orientation: landscape) and (max-height: 600px) {
+  .bluey-house .bluey-room { flex-basis: min(66%, 65vh); }
+}
