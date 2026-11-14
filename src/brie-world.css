@@ -116,3 +116,19 @@ span.world-island { text-align: center; font-size: 90px; }
 .battle-score.active { border-color: #b48bcc; background: #fff; }
 .battle-score img { display: block; border-radius: 10px; background: #f3e8f9; }
 .battle-score small { display: block; margin-top: 3px; color: #7d4ba0; letter-spacing: .11em; }
+
+.world-bluey { margin-top: 16px; }
+.bluey-feature {
+  width: 100%; display: flex; align-items: center; gap: 13px;
+  min-height: 82px; padding: 2px 16px 2px 8px;
+  border: 1px solid white; border-radius: 22px; color: #263d65;
+  font: inherit; text-align: left; cursor: pointer; touch-action: manipulation;
+  background: linear-gradient(100deg, #e0f3fc, #fff0ce);
+  box-shadow: 0 4px 0 #c7ddeb;
+}
+.bluey-feature img { width: 77px; height: 77px; filter: drop-shadow(0 4px 3px #31497344); }
+.bluey-feature strong, .bluey-feature small { display: block; }
+.bluey-feature strong { font-size: 22px; line-height: 1; font-weight: 900; }
+.bluey-feature small { margin-top: 4px; font-size: 14px; font-weight: 800; }
+.bluey-feature > span:last-child { margin-left: auto; font-size: 24px; }
+.bluey-feature:focus-visible { outline: 3px solid #345e9d; outline-offset: 4px; }
