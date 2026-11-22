@@ -16,6 +16,7 @@
 
 .camera-seek-video {
   position: absolute;
+  inset: 0;
   z-index: -1;
   width: 100%;
   height: 100%;
@@ -23,6 +24,8 @@
 }
 
 .camera-seek-header {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -86,37 +89,60 @@
 
 .camera-seek-intro button:disabled { opacity: .7; cursor: wait; }
 
-.camera-seek-field { position: relative; min-height: 0; }
-
-.camera-seek-pup {
+/* The bottom edge of the art sits behind the detected object's upper edge. */
+.camera-seek-perch {
   position: absolute;
   left: var(--x);
   top: var(--y);
-  transform: translate(-50%, -50%);
+  width: var(--size);
+  transform: translate(-50%, -100%);
+  transition: left .22s ease-out, top .22s ease-out, width .22s ease-out;
+}
+
+.camera-seek-pup {
   display: grid;
-  justify-items: center;
-  gap: 2px;
-  min-width: 72px;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1;
   min-height: 72px;
   padding: 0;
   background: transparent;
+  overflow: hidden;
   touch-action: manipulation;
 }
 
-.camera-seek-art { display: block; animation: camera-peek 2.2s var(--delay) ease-in-out infinite; }
-.camera-seek-art img {
-  display: block;
-  width: clamp(70px, 23vmin, 132px);
-  height: auto;
-  filter: drop-shadow(0 5px 5px #10233499);
+.camera-seek-art {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  transform: translateY(15%);
+  animation: camera-peek .48s cubic-bezier(.19,.85,.24,1.24) both;
 }
 
-.camera-seek-name { padding: 4px 10px; font-size: .88rem; }
+.camera-seek-art img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 4px 3px #18273877);
+}
+
+.camera-seek-name {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 12px;
+  color: #ffdf88;
+  pointer-events: none;
+}
+
 .camera-seek-pup:disabled { cursor: default; opacity: 1; }
-.camera-seek-pup:disabled .camera-seek-name { color: #ffdf88; }
-.camera-seek-pup:disabled .camera-seek-art { animation: camera-found .45s ease-out; }
+.camera-seek-pup:disabled .camera-seek-art { animation: camera-found .55s ease-out; }
 
 .camera-seek-footer {
+  grid-row: 3;
+  z-index: 1;
   min-height: 70px;
   display: grid;
   justify-items: center;
@@ -124,16 +150,18 @@
   padding: 4px 12px max(14px, env(safe-area-inset-bottom));
 }
 
-.camera-seek-footer p { margin: 0; text-align: center; }
+.camera-seek-footer p { margin: 0; max-width: 36ch; text-align: center; }
 
 @keyframes camera-peek {
-  50% { transform: translateY(-6px) rotate(4deg); }
+  from { transform: translateY(105%) rotate(-13deg); }
+  to { transform: translateY(15%); }
 }
 
 @keyframes camera-found {
-  45% { transform: translateY(-18px) scale(1.18); }
+  45% { transform: translateY(-8%) scale(1.09); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .camera-seek .camera-seek-art { animation: none; }
+  .camera-seek-perch { transition: none; }
 }
