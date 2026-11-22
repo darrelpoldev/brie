@@ -36,6 +36,7 @@ export default function useCameraHunt({ playing, turn, videoRef, previousObject 
     let started
     setPeek(null)
     setStatus('loading')
+    const startupHint = window.setTimeout(() => setStatus('unavailable'), 5000)
 
     async function scan() {
       if (stopped) return
@@ -85,6 +86,7 @@ export default function useCameraHunt({ playing, turn, videoRef, previousObject 
         const { createObjectScanner } = await import('./cameraObjects')
         scannerRef.current ??= await createObjectScanner()
         if (stopped) return
+        window.clearTimeout(startupHint)
         setStatus('searching')
         started = performance.now()
         timer = window.setTimeout(scan, 500)
@@ -97,6 +99,7 @@ export default function useCameraHunt({ playing, turn, videoRef, previousObject 
     return () => {
       stopped = true
       window.clearTimeout(timer)
+      window.clearTimeout(startupHint)
     }
   }, [playing, turn, videoRef, previousObject])
 

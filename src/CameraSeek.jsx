@@ -20,11 +20,12 @@ export default function CameraSeek({ onBack, onFound }) {
   const [round, setRound] = useState(0)
   const [lastObject, setLastObject] = useState(null)
   const [celebration, setCelebration] = useState(null)
+  const [manualSpot, setManualSpot] = useState(null)
   const playing = status === 'playing'
   const complete = found === pups.length
   const turn = round * pups.length + found
   const { peek, status: huntStatus } = useCameraHunt({
-    playing: playing && !complete && !celebration,
+    playing: playing && !complete && !celebration && !manualSpot,
     turn,
     videoRef,
     previousObject: lastObject,
@@ -47,6 +48,7 @@ export default function CameraSeek({ onBack, onFound }) {
       if (!requestRef.current) return
       stopCamera()
       if (videoRef.current) videoRef.current.srcObject = null
+      setManualSpot(null)
       setStatus('ready')
     }
 
@@ -110,12 +112,28 @@ export default function CameraSeek({ onBack, onFound }) {
     }
   }
 
-  const activePup = celebration ?? (peek && { ...peek, name: pups[(round + found) % pups.length] })
+  const spot = manualSpot ?? peek
+  const activePup = celebration ?? (spot && { ...spot, name: pups[(round + found) % pups.length] })
+
+  function pickSpot(event) {
+    const { left, top, width, height } = videoRef.current.getBoundingClientRect()
+    const x = event.detail ? event.clientX - left : width / 2
+    const y = event.detail ? event.clientY - top : height / 2
+    setManualSpot({
+      object: null,
+      position: {
+        x: Math.max(51, Math.min(width - 51, x)),
+        y: Math.max(150, Math.min(height - 90, y)),
+        size: 100,
+      },
+    })
+  }
+
   const hint = {
-    loading: 'Getting the hiding spots ready…',
-    searching: 'Slowly look around the room.',
-    hint: 'Try a chair, couch, or a plant. Hold the camera still for a moment.',
-    unavailable: 'Object detection couldn’t start. Check your connection and restart the game.',
+    loading: 'Tap the edge of something to find a pup.',
+    searching: 'Look around or tap an object to find a pup.',
+    hint: 'Hold still on an object, or tap its edge.',
+    unavailable: 'Tap the edge of something to find a pup.',
   }[huntStatus]
 
   return (
@@ -128,6 +146,9 @@ export default function CameraSeek({ onBack, onFound }) {
 
       {playing ? (
         <>
+          {!complete && !activePup && (
+            <button type="button" className="camera-seek-pick" aria-label="Pick a hiding spot" onClick={pickSpot} />
+          )}
           {activePup && (!complete || celebration) && (
             <div key={activePup.name} className="camera-seek-perch"
               style={{ '--x': `${activePup.position.x}px`, '--y': `${activePup.position.y}px`, '--size': `${activePup.position.size}px` }}>
@@ -135,6 +156,7 @@ export default function CameraSeek({ onBack, onFound }) {
                 disabled={Boolean(celebration)} onClick={() => {
                   setCelebration(activePup)
                   setLastObject(activePup.object)
+                  setManualSpot(null)
                   setFound(current => current + 1)
                   onFound()
                 }}>
@@ -149,7 +171,7 @@ export default function CameraSeek({ onBack, onFound }) {
               setFound(0)
               setLastObject(null)
               setCelebration(null)
-            }}>Play again</button> : <p>{celebration ? `You found ${celebration.name}!` : peek ? 'Quick, tap the pup!' : hint}</p>}
+            }}>Play again</button> : <p>{celebration ? `You found ${celebration.name}!` : activePup ? 'Quick, tap the pup!' : hint}</p>}
           </div>
         </>
       ) : (

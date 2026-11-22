@@ -89,6 +89,13 @@
 
 .camera-seek-intro button:disabled { opacity: .7; cursor: wait; }
 
+.camera-seek-pick {
+  position: absolute;
+  inset: 0;
+  background: transparent;
+  touch-action: manipulation;
+}
+
 /* The bottom edge of the art sits behind the detected object's upper edge. */
 .camera-seek-perch {
   position: absolute;
@@ -150,7 +157,7 @@
   padding: 4px 12px max(14px, env(safe-area-inset-bottom));
 }
 
-.camera-seek-footer p { margin: 0; max-width: 36ch; text-align: center; }
+.camera-seek-footer p { pointer-events: none; margin: 0; max-width: 36ch; text-align: center; }
 
 @keyframes camera-peek {
   from { transform: translateY(105%) rotate(-13deg); }
