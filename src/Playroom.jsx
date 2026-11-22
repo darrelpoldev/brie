@@ -35,6 +35,9 @@ export default function Playroom({ onOpen, installPrompt, isInstalled, showInsta
         <button type="button" className="bluey-feature" onClick={() => onOpen('bluey')}>
           <BlueyArt /><span><strong>Bluey</strong><small>Hide &amp; Seek</small></span><span aria-hidden="true">→</span>
         </button>
+        <button type="button" className="bluey-feature camera-feature" onClick={() => onOpen('camera-seek')}>
+          <BlueyArt bingo /><span><strong>Camera Hide &amp; Seek</strong><small>Find Bluey and Bingo in your room</small></span><span aria-hidden="true">→</span>
+        </button>
       </section>
       <section aria-labelledby="playroom-games">
         <div className="world-section"><h2 id="playroom-games">Pick a game</h2></div>

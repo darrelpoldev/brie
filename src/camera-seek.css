@@ -1,0 +1,174 @@
+.camera-feature {
+  margin-top: 10px;
+  background: linear-gradient(145deg, #fff0d5, #f9dfbb);
+}
+
+.camera-seek {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  isolation: isolate;
+  background: radial-gradient(ellipse at 50% 28%, #416d84, #16293e 75%);
+  color: #fff7e8;
+  font-family: 'Nunito Variable', system-ui, sans-serif;
+}
+
+.camera-seek-video {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.camera-seek-header {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: max(12px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) 10px max(14px, env(safe-area-inset-left));
+}
+
+.camera-seek button {
+  border: 0;
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.camera-seek button:focus-visible {
+  outline: 3px solid #ffdc82;
+  outline-offset: 4px;
+}
+
+.camera-seek-header button,
+.camera-seek-header strong,
+.camera-seek-footer p,
+.camera-seek-name {
+  border-radius: 999px;
+  padding: 9px 15px;
+  background: #17293fee;
+  color: #fff7e8;
+}
+
+.camera-seek-header button { min-height: 44px; }
+
+.camera-seek-intro {
+  align-self: center;
+  justify-self: center;
+  width: min(90%, 430px);
+  max-height: 100%;
+  overflow: auto;
+  padding: clamp(12px, 4vw, 28px);
+  border-radius: 28px;
+  background: #fff4df;
+  color: #24354d;
+  text-align: center;
+  box-shadow: 0 16px 40px #101d3455;
+}
+
+.camera-seek-duo { display: flex; justify-content: center; }
+.camera-seek-duo img { object-fit: contain; height: min(108px, 21dvh); width: auto; }
+.camera-seek-intro h1 { margin: 0; font-size: clamp(24px, 6vw, 36px); }
+.camera-seek-intro p { margin: 8px auto 16px; max-width: 32ch; }
+.camera-seek-intro [role='alert'] { color: #892f27; }
+
+.camera-seek-intro button,
+.camera-seek-footer button {
+  min-height: 48px;
+  padding: 10px 24px;
+  border-radius: 999px;
+  background: #ffdb81;
+  color: #23344c;
+  box-shadow: 0 4px 0 #b47837;
+}
+
+.camera-seek-intro button:disabled { opacity: .7; cursor: wait; }
+
+.camera-seek-pick {
+  position: absolute;
+  inset: 0;
+  background: transparent;
+  touch-action: manipulation;
+}
+
+/* The bottom edge of the art sits behind the detected object's upper edge. */
+.camera-seek-perch {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--size);
+  transform: translate(-50%, -100%);
+  transition: left .22s ease-out, top .22s ease-out, width .22s ease-out;
+}
+
+.camera-seek-pup {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1;
+  min-height: 72px;
+  padding: 0;
+  background: transparent;
+  overflow: hidden;
+  touch-action: manipulation;
+}
+
+.camera-seek-art {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  transform: translateY(15%);
+  animation: camera-peek .48s cubic-bezier(.19,.85,.24,1.24) both;
+}
+
+.camera-seek-art img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 4px 3px #18273877);
+}
+
+.camera-seek-name {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 12px;
+  color: #ffdf88;
+  pointer-events: none;
+}
+
+.camera-seek-pup:disabled { cursor: default; opacity: 1; }
+.camera-seek-pup:disabled .camera-seek-art { animation: camera-found .55s ease-out; }
+
+.camera-seek-footer {
+  grid-row: 3;
+  z-index: 1;
+  min-height: 70px;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  padding: 4px 12px max(14px, env(safe-area-inset-bottom));
+}
+
+.camera-seek-footer p { pointer-events: none; margin: 0; max-width: 36ch; text-align: center; }
+
+@keyframes camera-peek {
+  from { transform: translateY(105%) rotate(-13deg); }
+  to { transform: translateY(15%); }
+}
+
+@keyframes camera-found {
+  45% { transform: translateY(-8%) scale(1.09); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .camera-seek .camera-seek-art { animation: none; }
+  .camera-seek-perch { transition: none; }
+}
