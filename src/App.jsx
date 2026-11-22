@@ -1,4 +1,5 @@
 import Bluey from './Bluey'
+import CameraSeek from './CameraSeek'
 import RoyalPoopBattle from './RoyalPoopBattle'
 import Playroom from './Playroom'
 import { GamePiece } from './ToyArt'
@@ -2351,6 +2352,8 @@ export default function App() {
     setShowInstallTip(prev => !prev)
   }
 
+
+  if (screen === 'camera-seek') return <CameraSeek onBack={() => setScreen('home')} onFound={playHappyChime} />
 
   if (screen === 'bluey') return <Bluey onBack={() => setScreen('home')} />
 

@@ -71,8 +71,11 @@ function pupModel(bingo = false) {
   return pup
 }
 
-export function BlueyArt({ size = 92 }) {
-  return <RenderedToy artKey="bluey-pup-v2" makeModel={() => pupModel()} fallback="🐶" size={size} />
+const makeBluey = () => pupModel()
+const makeBingo = () => pupModel(true)
+
+export function BlueyArt({ size = 92, bingo = false }) {
+  return <RenderedToy artKey={bingo ? 'bingo-pup-v2' : 'bluey-pup-v2'} makeModel={bingo ? makeBingo : makeBluey} fallback="🐶" size={size} />
 }
 
 function makeProp(spot) {
