@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { Group, Mesh, MeshStandardMaterial } from 'three'
+import { CylinderGeometry, Group, Mesh, MeshPhysicalMaterial } from 'three'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
 import { RenderedToy } from './ToyArt'
 import { ball, block, drum, shapeModel } from './toyModels'
@@ -23,17 +23,27 @@ const rooms = [
 const positions = [[-2.07, .54], [2.05, .39], [.75, -1.76]]
 
 const roundedBrick = new RoundedBoxGeometry(1, 1, 1, 4, .095)
+const studGeometry = new CylinderGeometry(1, 1, 1, 20)
 const brickMaterials = new Map()
 
-function brick(group, color, position, size, tilt = 0) {
+function brick(group, color, position, size, tilt = 0, geometry = roundedBrick) {
   if (!brickMaterials.has(color)) {
-    brickMaterials.set(color, new MeshStandardMaterial({ color, roughness: .36 }))
+    brickMaterials.set(color, new MeshPhysicalMaterial({
+      color, roughness: .29, clearcoat: .65, clearcoatRoughness: .23,
+    }))
   }
-  const piece = new Mesh(roundedBrick, brickMaterials.get(color))
+  const piece = new Mesh(geometry, brickMaterials.get(color))
   piece.position.set(...position)
   piece.scale.set(...size)
   piece.rotation.z = tilt
   group.add(piece)
+}
+
+function joint(parent, position) {
+  const pivot = new Group()
+  pivot.position.set(...position)
+  parent.add(pivot)
+  return pivot
 }
 
 function pupModel(bingo = false) {
@@ -43,13 +53,20 @@ function pupModel(bingo = false) {
   const light = bingo ? '#ffcc83' : '#a4d2ef'
   const cream = '#ffecd0'
 
+  const arms = []
+  const legs = []
   for (const side of [-1, 1]) {
     brick(pup, dark, [side * .44, .8, 0], [.34, .59, .33], -side * .18)
     brick(pup, bingo ? '#f7ba81' : '#e4a69a', [side * .44, .87, .174], [.18, .32, .045], -side * .18)
-    brick(pup, dark, [side * .24, -.7, -.01], [.41, .37, .59])
-    brick(pup, light, [side * .24, -.79, .19], [.42, .2, .44])
-    brick(pup, base, [side * .597, -.26, -.01], [.27, .51, .33], side * .17)
-    brick(pup, light, [side * .64, -.433, .02], [.25, .17, .34], side * .17)
+    const leg = joint(pup, [side * .24, -.54, -.01])
+    brick(leg, dark, [0, -.16, 0], [.41, .37, .59])
+    brick(leg, light, [0, -.25, .2], [.42, .2, .44])
+    legs.push(leg)
+
+    const arm = joint(pup, [side * .55, -.08, -.01])
+    brick(arm, base, [side * .047, -.18, 0], [.27, .51, .33], side * .17)
+    brick(arm, light, [side * .09, -.353, .03], [.25, .17, .34], side * .17)
+    arms.push(arm)
   }
   brick(pup, dark, [.57, -.54, -.36], [.59, .29, .3], .42)
   brick(pup, light, [.79, -.435, -.36], [.22, .28, .31], .42)
@@ -68,11 +85,12 @@ function pupModel(bingo = false) {
   ball(pup, '#283449', [.192, .153, .683], [.161, .093, .09])
   ball(pup, '#514254', [.1, -.023, .678], [.146, .064, .03])
   ball(pup, '#f3a89d', [.137, -.048, .697], [.074, .027, .012])
+  pup.userData.joints = { arms, legs }
   return pup
 }
 
 export function BlueyArt({ size = 92 }) {
-  return <RenderedToy artKey="bluey-pup-v2" makeModel={() => pupModel()} fallback="🐶" size={size} />
+  return <RenderedToy artKey="bluey-pup-v3" makeModel={() => pupModel()} fallback="🐶" size={size} />
 }
 
 function makeProp(spot) {
@@ -102,7 +120,12 @@ function makeProp(spot) {
     block(g, '#f4a597', [.34, .13, .13], [.4, .42, .28], [0, 0, -.21])
   } else if (name === 'Toy chest') {
     block(g, color, [0, -.13, 0], [1.53, .86, .71])
-    block(g, '#f5c87b', [0, .34, 0], [1.66, .2, .83])
+    brick(g, '#f5c87b', [0, .34, 0], [1.66, .2, .83])
+    for (const x of [-.52, 0, .52]) {
+      for (const z of [-.19, .19]) {
+        brick(g, '#f5c87b', [x, .48, z], [.12, .09, .12], 0, studGeometry)
+      }
+    }
     for (const x of [-.53, .53]) block(g, '#efce8c', [x, -.13, .367], [.12, .89, .045])
     const star = shapeModel('star', '#fff0a5')
     star.scale.setScalar(.22)
@@ -145,13 +168,20 @@ function HidingProp({ model, inspected, side }) {
 
 function Reveal({ model }) {
   const ref = useRef(null)
-  const start = useRef(null)
-  useFrame(({ clock, invalidate }) => {
-    start.current ??= clock.elapsedTime
-    const time = Math.min(1, (clock.elapsedTime - start.current) / .66)
-    ref.current.scale.setScalar(.62 + Math.sin(time * Math.PI / 2) * .43)
-    ref.current.position.set(-.13, Math.sin(time * Math.PI) * .37 + .19, .64)
-    ref.current.rotation.y = Math.sin(time * Math.PI) * .65 - .17
+  const elapsed = useRef(0)
+  useFrame(({ invalidate }, delta) => {
+    elapsed.current = Math.min(.92, elapsed.current + Math.min(delta, .05))
+    const time = elapsed.current / .92
+    const hop = Math.min(1, time / .56)
+    const arc = Math.sin(hop * Math.PI)
+    const wave = Math.sin(time * Math.PI)
+    ref.current.scale.setScalar(.72 + .33 * (1 - (1 - hop) ** 3))
+    ref.current.position.set(-.13, .19 + .51 * arc, .64)
+    ref.current.rotation.y = -.17 + .53 * arc
+    const { arms, legs } = model.userData.joints
+    arms[1].rotation.z = wave * (1.7 + .28 * Math.sin(time * Math.PI * 8))
+    legs[0].rotation.x = -.27 * arc
+    legs[1].rotation.x = .27 * arc
     if (time < 1) invalidate()
   })
   return <group ref={ref}><primitive object={model} /></group>
@@ -178,7 +208,7 @@ function Room({ room, opened, hiding, found, hint, friend, guidePosition }) {
     block(backdrop, '#fff1d2', [0, 2.68, -1.02], [1.89, .07, .14])
     block(backdrop, '#fff1d2', [0, 2.11, -1.03], [2.12, .14, .36])
     for (let i = 0; i < 14; i++) {
-      drum(backdrop, '#c8815e', [(i - 6.5) * .49, -3.29, -.79], [.14, .1, .12], [Math.PI / 2, 0, 0])
+      brick(backdrop, '#c8815e', [(i - 6.5) * .49, -3.29, -.79], [.14, .085, .14], 0, studGeometry)
     }
     for (const [x, y, color] of [[-3.13, 2.65, '#eab66e'], [3.05, 2.58, '#e59196'], [-3.04, -.01, '#e7ab61']]) {
       const star = shapeModel('star', color)
@@ -190,8 +220,9 @@ function Room({ room, opened, hiding, found, hint, friend, guidePosition }) {
   }, [room, friend])
   return <Canvas orthographic camera={camera} dpr={[1, 1.5]} frameloop="demand" aria-hidden="true"
     fallback={<div className="bluey-fallback" />} gl={{ antialias: true, powerPreference: 'low-power' }}>
-    <hemisphereLight args={['#fff6e4', '#b9a1b7', 2.15]} />
-    <directionalLight position={[-3, 6, 6]} color="#fff2d7" intensity={2.4} />
+    <hemisphereLight args={['#fff6e4', '#b9a1b7', 1.55]} />
+    <directionalLight position={[-3, 6, 6]} color="#fff2d7" intensity={2.7} />
+    <directionalLight position={[4, 2, 4]} color="#cde9ff" intensity={.75} />
     <primitive object={backdrop} />
     {guidePosition && <SearchGuide model={guide} target={guidePosition} />}
     {positions.map(([x, y], index) => {
@@ -217,14 +248,30 @@ function Room({ room, opened, hiding, found, hint, friend, guidePosition }) {
 
 function SearchGuide({ model, target }) {
   const ref = useRef(null)
+  const stride = useRef(0)
+  useEffect(() => () => {
+    const { arms, legs } = model.userData.joints
+    for (const limb of [...arms, ...legs]) limb.rotation.x = 0
+  }, [model])
+
   useFrame(({ invalidate }, delta) => {
-    const position = ref.current.position
-    const step = Math.min(1, delta * 8)
-    position.x += (target[0] - position.x) * step
-    position.y += (target[1] - position.y) * step
-    const distance = Math.hypot(target[0] - position.x, target[1] - position.y)
-    ref.current.rotation.y = target[0] > position.x ? .34 : -.19
-    if (distance > .015) invalidate()
+    const { position, rotation } = ref.current
+    const dx = target[0] - position.x
+    const dy = target[1] - position.y
+    const distance = Math.hypot(dx, dy)
+    const step = distance < .015 ? 1 : 1 - Math.exp(-Math.min(delta, .05) * 8)
+    position.x += dx * step
+    position.y += dy * step
+    stride.current += distance * step * 9
+
+    const remaining = distance * (1 - step)
+    const swing = Math.sin(stride.current) * .63 * Math.min(1, remaining * 4)
+    const { arms, legs } = model.userData.joints
+    arms[0].rotation.x = legs[1].rotation.x = swing
+    arms[1].rotation.x = legs[0].rotation.x = -swing
+    rotation.z = swing * .16
+    if (Math.abs(dx) > .015) rotation.y = dx > 0 ? .48 : -.48
+    if (remaining > 0) invalidate()
   })
   return <group ref={ref} position={[-2.32, -2.26, 1]} scale={.78}><primitive object={model} /></group>
 }
