@@ -3,6 +3,8 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
+const base = process.env.VERCEL === '1' ? '/' : '/brie/'
+
 export default defineConfig({
   plugins: [
     react(),
@@ -18,8 +20,8 @@ export default defineConfig({
         theme_color: '#FEF3E8',
         background_color: '#FEF3E8',
         display: 'standalone',
-        start_url: '/brie/',
-        scope: '/brie/',
+        start_url: base,
+        scope: base,
         icons: [
           {
             src: 'icon-192.svg',
@@ -45,5 +47,5 @@ export default defineConfig({
       },
     },
   },
-  base: '/brie/',
+  base,
 })
